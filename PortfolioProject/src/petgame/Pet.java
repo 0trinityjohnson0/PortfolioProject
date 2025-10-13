@@ -15,6 +15,7 @@ public class Pet {
 
     private int happiness;
     private int hunger;
+    private int energy = 50;
     
     // Constructor
     public Pet(String name, String species, String breed, String gender) {
@@ -52,8 +53,12 @@ public class Pet {
     public int getHunger() {
         return hunger;
     }
+    
+    public int getEnergy() {
+        return energy;
+    }
 
-    // Setters (optional, for later)
+    // Setters
     public void setName(String name) {
         this.name = name;
     }
@@ -90,5 +95,15 @@ public class Pet {
     public void decreaseHunger(int amount) {
         hunger -= amount;
         if (hunger < 0) hunger = 0;
+    }
+
+    public void increaseEnergy(int amount) {
+        energy += amount;
+        if (energy > 100) energy = 100;
+    }
+
+    public void decreaseEnergy(int amount) {
+        energy -= amount;
+        if (energy < 0) energy = 0;
     }
 }
