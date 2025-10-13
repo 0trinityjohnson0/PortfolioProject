@@ -1,3 +1,10 @@
+// --- Pet Haven ---
+// Game created by Trinity Johnson for CS 3250 Portfolio Project
+
+// MainApp class -- This is the main start point for the game. 
+// It manages switching between different screens like the main menu, 
+// adoption center, and home scenes, and keeps track of the adopted pet.
+
 package petgame;
 
 import javafx.application.Application;

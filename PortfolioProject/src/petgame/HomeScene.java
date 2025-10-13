@@ -1,3 +1,10 @@
+// --- Pet Haven ---
+// Game created by Trinity Johnson for CS 3250 Portfolio Project
+
+// HomeScene class -- Displays the player's adopted pet and its stats. 
+// Provides buttons for interactions like feeding, playing, and grooming. 
+// Shows animations and updates the pet's happiness and hunger stats.
+
 package petgame;
 
 import javafx.geometry.Insets;

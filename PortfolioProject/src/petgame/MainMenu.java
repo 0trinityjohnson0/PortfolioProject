@@ -1,3 +1,11 @@
+// --- Pet Haven ---
+// Game created by Trinity Johnson for CS 3250 Portfolio Project
+
+// MainMenu class -- Creates the main menu screen for the game.
+// Provides buttons for starting a new game, loading a saved game, or exiting the application.
+// The menu layout includes a title and vertically arranged buttons, and it delegates actions
+// like starting a new game to the MainApp class.
+
 package petgame;
 
 import javafx.geometry.Pos;

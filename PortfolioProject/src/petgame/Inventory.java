@@ -1,3 +1,9 @@
+// --- Pet Haven ---
+// Game created by Trinity Johnson for CS 3250 Portfolio Project
+
+// Inventory class -- Manages a collection of items the player has collected.
+// Provides methods to add items and retrieve the current list of items.
+
 package petgame;
 
 import java.util.ArrayList;

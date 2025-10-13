@@ -1,3 +1,14 @@
+// --- Pet Haven ---
+// Game created by Trinity Johnson for CS 3250 Portfolio Project
+
+// GameScene class -- Represents the main gameplay interface for interacting with a pet. 
+// Displays the pet’s stats (hunger, happiness, energy) using progress bars, shows feedback messages, 
+// and provides buttons to feed, play with, or pet the animal. 
+// Also includes a back button to return to the main menu.
+
+// THIS CLASS IS A LITTEL REDUNDANT AT THIS POINT AS I CREATED THE HOMESCENE 
+// BUT I WILL KEEP UNLESS I KNOW FOR SURE I WILL NOT BE USING IT
+
 package petgame;
 
 import javafx.geometry.Insets;

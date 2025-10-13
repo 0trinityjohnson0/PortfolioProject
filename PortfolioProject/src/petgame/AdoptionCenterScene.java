@@ -1,3 +1,10 @@
+// --- Pet Haven ---
+// Game created by Trinity Johnson for CS 3250 Portfolio Project
+
+// AdoptionCenterScene class -- Displays a screen where the player can adopt a pet. 
+// Shows a selection of randomly generated pets with their species, breed, and gender, 
+// and allows the player to name and adopt one.
+
 package petgame;
 
 import javafx.geometry.Insets;
