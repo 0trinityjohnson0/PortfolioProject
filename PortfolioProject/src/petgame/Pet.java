@@ -1,0 +1,87 @@
+package petgame;
+
+public class Pet {
+    private String name;
+    private String species; // "Dog" or "Cat"
+    private String breed;
+    private String gender;
+
+    private int happiness;
+    private int hunger;
+    
+    // Constructor
+    public Pet(String name, String species, String breed, String gender) {
+        this.name = name;
+        this.species = species;
+        this.breed = breed;
+        this.gender = gender;
+        
+     // Initialize stats
+        this.happiness = 50;
+        this.hunger = 50;
+    }
+
+    // Getters
+    public String getName() {
+        return name;
+    }
+
+    public String getSpecies() {
+        return species;
+    }
+
+    public String getBreed() {
+        return breed;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+    
+    public int getHappiness() {
+        return happiness;
+    }
+
+    public int getHunger() {
+        return hunger;
+    }
+
+    // Setters (optional, for later)
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setSpecies(String species) {
+        this.species = species;
+    }
+
+    public void setBreed(String breed) {
+        this.breed = breed;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+    
+    
+ // ---------- Stat modification methods ----------
+    public void increaseHappiness(int amount) {
+        happiness += amount;
+        if (happiness > 100) happiness = 100;
+    }
+
+    public void decreaseHappiness(int amount) {
+        happiness -= amount;
+        if (happiness < 0) happiness = 0;
+    }
+
+    public void increaseHunger(int amount) {
+        hunger += amount;
+        if (hunger > 100) hunger = 100;
+    }
+
+    public void decreaseHunger(int amount) {
+        hunger -= amount;
+        if (hunger < 0) hunger = 0;
+    }
+}
