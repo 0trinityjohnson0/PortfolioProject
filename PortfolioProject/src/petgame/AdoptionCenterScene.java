@@ -1,141 +1,191 @@
 // --- Pet Haven ---
 // Game created by Trinity Johnson for CS 3250 Portfolio Project
 
-// AdoptionCenterScene class -- Displays a screen where the player can adopt a pet. 
-// Shows a selection of randomly generated pets with their species, breed, and gender, 
+// AdoptionCenterScene class -- Displays a screen where the player can adopt a pet.
+// Shows a selection of randomly generated pets with their species, breed, and gender,
 // and allows the player to name and adopt one.
 
 package petgame;
 
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.text.Font;
+import javafx.util.Duration;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 public class AdoptionCenterScene {
 
-    private VBox layout;
-    private MainApp mainApp;
-    private List<Pet> availablePets;
+    private final MainApp mainApp;
+    private final boolean isInitialAdoption;
+    private final BorderPane layout;
+    private final Random random = new Random();
 
-    public AdoptionCenterScene(MainApp mainApp) {
+    private final List<Pet> petOptions = new ArrayList<>();
+
+    public AdoptionCenterScene(MainApp mainApp, boolean isInitialAdoption) {
         this.mainApp = mainApp;
-        this.availablePets = generateRandomPets();
+        this.isInitialAdoption = isInitialAdoption;
+        layout = new BorderPane();
+
+        generatePetOptions();
         createLayout();
     }
 
-    private void createLayout() {
-        layout = new VBox(20);
-        layout.setPadding(new Insets(20));
-        layout.setAlignment(Pos.CENTER);
+    // ---------- GENERATE PET OPTIONS ----------
+    private void generatePetOptions() {
+        if (isInitialAdoption) {
+            // First-time choice — 3 pre-chosen pets
+            petOptions.add(new Pet("", "Cat", "Tuxedo", "Male"));
+            petOptions.add(new Pet("", "Dog", "Doberman", "Male"));
+            petOptions.add(new Pet("", "Dog", "Shiba Inu", "Female"));
+        } else {
+            // Later adoptions — 3 randomly generated pets
+            String[] species = {"Dog", "Cat"};
+            String[][] breeds = {
+                    {"Doberman", "Shiba Inu"},
+                    {"OrangeTabby", "Tuxedo"}
+            };
+            String[] genders = {"Male", "Female"};
 
-        Label title = new Label("Welcome to the Pet Adoption Center!");
-        title.setFont(new Font(26));
-
-        Label instruction = new Label("Choose your first baby pet to adopt:");
-        instruction.setFont(new Font(16));
-
-        HBox petsBox = new HBox(20);
-        petsBox.setAlignment(Pos.CENTER);
-
-        for (Pet pet : availablePets) {
-            VBox petCard = createPetCard(pet);
-            petsBox.getChildren().add(petCard);
+            for (int i = 0; i < 3; i++) {
+                int spIndex = random.nextInt(species.length);
+                String s = species[spIndex];
+                String b = breeds[spIndex][random.nextInt(breeds[spIndex].length)];
+                String g = genders[random.nextInt(genders.length)];
+                petOptions.add(new Pet("???", s, b, g)); // placeholder name??
+            }
         }
-
-        Button backBtn = new Button("Back to Main Menu");
-        backBtn.setOnAction(e -> mainApp.showMainMenu());
-
-        layout.getChildren().addAll(title, instruction, petsBox, backBtn);
     }
 
-    private VBox createPetCard(Pet pet) {
-        VBox card = new VBox(8);
-        card.setPadding(new Insets(10));
-        card.setAlignment(Pos.CENTER);
-        card.setStyle("-fx-border-color: #333; -fx-border-width: 2px; -fx-background-color: #f5f5f5; "
-                + "-fx-border-radius: 10px; -fx-background-radius: 10px;");
-        card.setPrefWidth(180);
+    // ---------- CREATE LAYOUT ----------
+    private void createLayout() {
+        layout.setPadding(new Insets(30));
+        layout.setStyle("-fx-background-color: #f4f1ea;");
 
-        // ---------- Add Image ----------
-        String speciesFolder = pet.getSpecies(); // "Dog" or "Cat"
-        String breedFolder = pet.getBreed();     // "Doberman" or "Tuxedo"
-        String imagePath = "/petgame/assets/" + speciesFolder + "/" + breedFolder + "/Idle.png";
+        Label title = new Label("Adoption Center");
+        title.setStyle("-fx-font-size: 28px; -fx-font-weight: bold;");
+        layout.setTop(title);
+        BorderPane.setAlignment(title, Pos.CENTER);
 
-        Image petImage;
-        try {
-            petImage = new Image(getClass().getResourceAsStream(imagePath));
-        } catch (Exception e) {
-            System.out.println("Image not found: " + imagePath);
-            petImage = new Image(getClass().getResourceAsStream("/assets/Idle.png"));
+        HBox petBox = new HBox(40);
+        petBox.setAlignment(Pos.CENTER);
+
+        for (Pet pet : petOptions) {
+            VBox petCard = createPetCard(pet);
+            petBox.getChildren().add(petCard);
         }
 
-        ImageView petImageView = new ImageView(petImage);
-        petImageView.setFitWidth(120);
-        petImageView.setFitHeight(120);
-        petImageView.setPreserveRatio(true);
+        layout.setCenter(petBox);
 
-        // ---------- Labels ----------
-        Label speciesLabel = new Label(pet.getSpecies());
-        speciesLabel.setFont(new Font(18));
+        // Back button
+        Button backBtn = new Button("Back");
+        backBtn.setStyle("-fx-font-size: 16px;");
+        backBtn.setOnAction(e -> {
+            if (isInitialAdoption) {
+                mainApp.showMainMenu();
+            } else {
+                mainApp.showHomeScene(mainApp.getAdoptedPets().get(0));
+            }
+        });
 
-        Label breedLabel = new Label("Breed: " + pet.getBreed());
+        layout.setBottom(backBtn);
+        BorderPane.setAlignment(backBtn, Pos.CENTER);
+        BorderPane.setMargin(backBtn, new Insets(20, 0, 0, 0));
+    }
+
+    // ---------- CREATE PET CARDS ----------
+    private VBox createPetCard(Pet pet) {
+        VBox card = new VBox(10);
+        card.setAlignment(Pos.CENTER);
+        card.setPadding(new Insets(10));
+        card.setStyle("-fx-background-color: #fff8f0; -fx-border-color: #d4b483; -fx-border-radius: 10; -fx-background-radius: 10;");
+        card.setPrefWidth(220);
+
+        // Load pet image 
+        String imagePath = "/petgame/assets/" + pet.getSpecies() + "/" + pet.getBreed() + "/Idle.png";
+        InputStream is = getClass().getResourceAsStream(imagePath);
+        ImageView petView = new ImageView();
+
+        if (is != null) {
+            Image spriteSheet = new Image(is);
+
+            // Showing the sprite's movement
+            int frameCount = 4; // same as home scene
+            int frameHeight = 70; // match sprite frame height
+            int frameWidth = (int) spriteSheet.getWidth() / frameCount;
+            double frameDuration = 1500; // better movement
+
+            petView.setImage(spriteSheet);
+            petView.setViewport(new Rectangle2D(0, 0, frameWidth, frameHeight));
+            petView.setFitWidth(150);
+            petView.setPreserveRatio(true);
+
+            // Idle animation
+            playIdleAnimation(petView, frameCount, frameWidth, frameHeight, frameDuration);
+        } else {
+            System.err.println("WARNING: Pet image not found: " + imagePath);
+        }
+
+        Label nameLabel = new Label(pet.getBreed());
+        nameLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
         Label genderLabel = new Label("Gender: " + pet.getGender());
-        //Label ageLabel = new Label("Age: Baby");
+        genderLabel.setStyle("-fx-font-size: 14px;");
 
-        // ---------- Adopt Button ----------
-        Button adoptBtn = new Button("Adopt Me!");
-        adoptBtn.setOnAction(e -> adoptPet(pet));
+        Button adoptBtn = new Button("Choose Me!");
+        adoptBtn.setStyle("-fx-font-size: 16px; -fx-background-color: #ffd27f;");
+        adoptBtn.setOnAction(e -> promptNameAndAdopt(pet));
 
-        card.getChildren().addAll(petImageView, speciesLabel, breedLabel, genderLabel, adoptBtn);
+        card.getChildren().addAll(petView, nameLabel, genderLabel, adoptBtn);
         return card;
     }
 
-    private void adoptPet(Pet pet) {
-        TextInputDialog nameDialog = new TextInputDialog();
-        nameDialog.setTitle("Name Your Pet");
-        nameDialog.setHeaderText("You chose a baby " + pet.getBreed() + " " + pet.getSpecies().toLowerCase() + "!");
-        nameDialog.setContentText("Enter your pet's name:");
+    // ---------- SPRITE ANIMATION HELPER ----------
+    private void playIdleAnimation(ImageView imageView, int frameCount, int frameWidth, int frameHeight, double duration) {
+        Timeline animation = new Timeline();
 
-        nameDialog.showAndWait().ifPresent(name -> {
-            pet.setName(name.trim());
-            mainApp.startGameWithPet(pet);
+        for (int i = 0; i < frameCount; i++) {
+            final int frameIndex = i;
+            animation.getKeyFrames().add(
+                new KeyFrame(Duration.millis(i * (duration / frameCount)), e -> {
+                    imageView.setViewport(new Rectangle2D(frameIndex * frameWidth, 0, frameWidth, frameHeight));
+                })
+            );
+        }
+
+        animation.setCycleCount(Animation.INDEFINITE);
+        animation.play();
+    }
+
+    // --- ADOPTION PROCESS ---
+    private void promptNameAndAdopt(Pet chosenPet) {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Name Your Pet");
+        dialog.setHeaderText("What would you like to name your new friend?");
+        dialog.setContentText("Name:");
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(name -> {
+            chosenPet.setName(name);
+            mainApp.startGameWithPet(chosenPet);
         });
     }
 
-    private List<Pet> generateRandomPets() {
-        List<Pet> pets = new ArrayList<>();
-        Random rand = new Random();
-
-        String[] dogBreeds = {"Doberman"};
-        String[] catBreeds = {"Tuxedo"};
-        String[] genders = {"Male", "Female"};
-
-        for (int i = 0; i < 3; i++) {
-            boolean isDog = rand.nextBoolean();
-            String species = isDog ? "Dog" : "Cat";
-            String breed = isDog
-                    ? dogBreeds[rand.nextInt(dogBreeds.length)]
-                    : catBreeds[rand.nextInt(catBreeds.length)];
-            String gender = genders[rand.nextInt(genders.length)];
-
-            Pet pet = new Pet("Unnamed", species, breed, gender);
-            //pet.setAge(0); // newborn
-            pets.add(pet);
-        }
-
-        return pets;
-    }
-
-    public VBox getLayout() {
+    public BorderPane getLayout() {
         return layout;
     }
 }

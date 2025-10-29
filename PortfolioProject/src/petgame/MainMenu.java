@@ -20,16 +20,19 @@ public class MainMenu {
         layout = new VBox(20);
         layout.setAlignment(Pos.CENTER);
 
+        // Title
         Text title = new Text("🐾 Welcome to Pet Haven 🐾");
         title.setStyle("-fx-font-size: 28px; -fx-font-weight: bold;");
 
+        // Buttons
         Button newGameBtn = new Button("New Game");
         Button loadGameBtn = new Button("Load Game");
         Button exitBtn = new Button("Exit");
 
-        newGameBtn.setOnAction(e -> mainApp.showAdoptionCenter());
+        // Button actions
+        newGameBtn.setOnAction(e -> mainApp.showInitialAdoption());
         loadGameBtn.setOnAction(e -> System.out.println("Load Game coming soon!"));
-        exitBtn.setOnAction(e -> mainApp.getPrimaryStage().close());
+        exitBtn.setOnAction(e -> mainApp.exitGame());
 
         layout.getChildren().addAll(title, newGameBtn, loadGameBtn, exitBtn);
     }
