@@ -13,6 +13,7 @@ public class MainApp extends Application {
 
     private Stage primaryStage;
     private Pet adoptedPet;
+    private boolean breedingInProgress = false; // prevents repeated triggers
 
     // Track all pets the player has adopted
     private List<Pet> adoptedPets = new ArrayList<>();
@@ -28,7 +29,7 @@ public class MainApp extends Application {
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
-        primaryStage.setResizable(false); // Keep size fixed
+        primaryStage.setResizable(false); // keep size fixed
         showMainMenu();
     }
 
@@ -87,7 +88,6 @@ public class MainApp extends Application {
     }
 
     public void showParkScene(Pet pet) {
-        System.out.println("Going to Park...");
         // TODO: Implement ParkScene
     }
 
@@ -99,9 +99,16 @@ public class MainApp extends Application {
     }
 
     public void showMountainScene(Pet pet) {
-        System.out.println("Going to Mountains...");
         // TODO: Implement MountainScene
     }
+    
+    public void showBreedingScene(Pet parent1, Pet parent2) {
+        BreedingScene breedScene = new BreedingScene(this, parent1, parent2);
+        Scene scene = breedScene.getScene();
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("Pet Haven - New Baby!");
+    }
+    
 
     public void exitGame() {
         if (primaryStage != null) {
@@ -134,4 +141,6 @@ public class MainApp extends Application {
     public Stage getPrimaryStage() {
         return primaryStage;
     }
+    
+    
 }

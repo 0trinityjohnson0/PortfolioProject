@@ -60,7 +60,7 @@ public abstract class BasePetScene {
     /** Path to this scene's background image. */
     protected abstract String getBackgroundPath();
 
-    /** Called every few seconds for each pet (handles hunger, energy, etc.). */
+    // Called every few seconds for each pet (handles hunger, energy)
     protected abstract void onEnvironmentTick(Pet pet);
 
     /** Builds the care button panel — subclasses decide which actions appear. */
@@ -184,6 +184,7 @@ public abstract class BasePetScene {
             for (Pet p : mainApp.getAdoptedPets()) {
                 onEnvironmentTick(p);
             }
+            checkForBreeding();
             updateStatsAndHearts();
         }));
         environmentTimeline.setCycleCount(Timeline.INDEFINITE);
@@ -192,6 +193,27 @@ public abstract class BasePetScene {
 
     protected void stopEnvironmentTimeline() {
         if (environmentTimeline != null) environmentTimeline.stop();
+    }
+    
+    private void checkForBreeding() {
+        var pets = mainApp.getAdoptedPets();
+        if (pets.size() < 2) return;
+
+        for (int i = 0; i < pets.size(); i++) {
+            for (int j = i + 1; j < pets.size(); j++) {
+                Pet p1 = pets.get(i);
+                Pet p2 = pets.get(j);
+
+                boolean sameSpecies = p1.getSpecies().equals(p2.getSpecies());
+                boolean fullHearts = p1.getRelationshipHearts() >= 5 && p2.getRelationshipHearts() >= 5;
+
+                // Only breed when rules allow it (same 5-heart rule)
+                if (sameSpecies && fullHearts && mainApp.canAdoptAnotherPet()) {
+                    mainApp.showBreedingScene(p1, p2);
+                    return; // stop checking after first eligible pair
+                }
+            }
+        }
     }
 
     // ---------- UI Update Utilities ----------
