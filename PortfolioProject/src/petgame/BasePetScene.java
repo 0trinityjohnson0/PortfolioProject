@@ -207,12 +207,34 @@ public abstract class BasePetScene {
                 boolean sameSpecies = p1.getSpecies().equals(p2.getSpecies());
                 boolean fullHearts = p1.getRelationshipHearts() >= 5 && p2.getRelationshipHearts() >= 5;
 
-                // Only breed when rules allow it (same 5-heart rule)
+                // only same species required now
                 if (sameSpecies && fullHearts && mainApp.canAdoptAnotherPet()) {
+
+                    // reset hearts after breeding
+                    p1.decreaseHappiness(p1.getHappiness()); // sets happiness to 0
+                    p2.decreaseHappiness(p2.getHappiness());
+                    p1.decreaseEnergy(p1.getEnergy()); // reset energy lol
+                    p2.decreaseEnergy(p2.getEnergy());
+                    
+                    // reset relationship completely
+                    resetRelationship(p1);
+                    resetRelationship(p2);
+
                     mainApp.showBreedingScene(p1, p2);
-                    return; // stop checking after first eligible pair
+                    return; // stop after one successful pair
                 }
             }
+        }
+    }
+
+    private void resetRelationship(Pet pet) {
+        
+        try {
+            var relationshipField = Pet.class.getDeclaredField("relationship");
+            relationshipField.setAccessible(true);
+            relationshipField.set(pet, 0);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

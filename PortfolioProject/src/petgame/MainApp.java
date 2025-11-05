@@ -13,7 +13,6 @@ public class MainApp extends Application {
 
     private Stage primaryStage;
     private Pet adoptedPet;
-    private boolean breedingInProgress = false; // prevents repeated triggers
 
     // Track all pets the player has adopted
     private List<Pet> adoptedPets = new ArrayList<>();
