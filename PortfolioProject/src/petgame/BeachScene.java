@@ -21,7 +21,7 @@ public class BeachScene extends BasePetScene {
 
     @Override
     protected String getSceneTitle() {
-        return "At the Beach 🌊";
+        return "At the Beach";
     }
 
     @Override

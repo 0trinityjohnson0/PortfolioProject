@@ -1,5 +1,13 @@
 // --- Pet Haven ---
 // Game created by Trinity Johnson for CS 3250 Portfolio Project
+//
+// BasePetScene -- Shared parent class for all pet interaction environments (Home, Beach, Park, etc.)
+// Handles:
+//  • Background and pet rendering
+//  • Shared UI structure (top bar, pet cards, care buttons)
+//  • Stat updates and decay timeline
+//  • Automatic breeding when two pets reach 5 hearts
+//  • Individual pet card stat refresh every few seconds
 
 package petgame;
 
@@ -15,29 +23,13 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.util.Duration;
+import java.util.*;
 
-import java.util.List;
-
-/**
- * BasePetScene
- * Shared parent class for all pet interaction environments (Home, Beach, Park, etc.).
- * Handles:
- *  - Background and pet rendering
- *  - Shared UI structure (stats panel, hearts, navigation)
- *  - Stat updates and decay timeline
- *  - Calls abstract methods for scene-specific customization
- */
 public abstract class BasePetScene {
 
     protected MainApp mainApp;
-    protected Pet activePet; // primarily used for relationship hearts
+    protected Pet activePet;
     protected BorderPane layout;
-
-    // UI Elements
-    protected ProgressBar happinessBar;
-    protected ProgressBar hungerBar;
-    protected ProgressBar energyBar;
-    protected HBox heartsBox;
 
     // Heart images
     protected Image fullHeart;
@@ -45,6 +37,12 @@ public abstract class BasePetScene {
 
     // Stat decay timeline
     protected Timeline environmentTimeline;
+
+    // --- Per-pet UI references ---
+    private final Map<Pet, ProgressBar> hungerBars = new HashMap<>();
+    private final Map<Pet, ProgressBar> happinessBars = new HashMap<>();
+    private final Map<Pet, ProgressBar> energyBars = new HashMap<>();
+    private final Map<Pet, HBox> heartRows = new HashMap<>();
 
     // ---------- Constructor ----------
     public BasePetScene(MainApp mainApp, Pet activePet) {
@@ -57,16 +55,11 @@ public abstract class BasePetScene {
     }
 
     // ---------- Abstract Methods ----------
-    /** Path to this scene's background image. */
     protected abstract String getBackgroundPath();
-
-    // Called every few seconds for each pet (handles hunger, energy)
     protected abstract void onEnvironmentTick(Pet pet);
-
-    /** Builds the care button panel — subclasses decide which actions appear. */
     protected abstract HBox buildCareButtons();
 
-    // ---------- Shared Layout Setup ----------
+    // ---------- Layout Setup ----------
     private void createLayout() {
         layout = new BorderPane();
         layout.setPrefSize(MainApp.WINDOW_WIDTH, MainApp.WINDOW_HEIGHT);
@@ -74,8 +67,11 @@ public abstract class BasePetScene {
 
         layout.setTop(buildTopBar());
         layout.setCenter(buildCenterPane());
-        layout.setLeft(buildStatsPanel());
-        layout.setBottom(buildCareButtons());
+
+        VBox bottomBox = new VBox(15);
+        bottomBox.setAlignment(Pos.CENTER);
+        bottomBox.getChildren().addAll(buildCareButtons(), buildPetCards());
+        layout.setBottom(bottomBox);
     }
 
     // ---------- Top Bar ----------
@@ -96,32 +92,23 @@ public abstract class BasePetScene {
         BorderPane.setMargin(backBtn, new Insets(0, 20, 0, 0));
         topPane.setRight(backBtn);
         BorderPane.setAlignment(backBtn, Pos.CENTER_RIGHT);
-
         return topPane;
     }
 
-    // ---------- Title Helper ----------
     protected String getSceneTitle() {
-        // Default title — can override in subclasses if needed
         return "Your Pets";
     }
 
-    // ---------- Center (Background + Pet Sprites) ----------
+    // ---------- Center (Background + Sprites) ----------
     private StackPane buildCenterPane() {
         StackPane centerPane = new StackPane();
 
-        // Load background
         Image background = AssetCache.getImage(getBackgroundPath());
-        if (background == null) {
-            background = AssetCache.getImage("/petgame/assets/placeholder.png");
-        }
-
         ImageView backgroundView = new ImageView(background);
         backgroundView.setFitWidth(800);
         backgroundView.setPreserveRatio(true);
         centerPane.getChildren().add(backgroundView);
 
-        // Load pets
         List<Pet> pets = mainApp.getAdoptedPets();
         if (pets.isEmpty()) return centerPane;
 
@@ -134,48 +121,78 @@ public abstract class BasePetScene {
             StackPane.setAlignment(view, Pos.BOTTOM_CENTER);
             view.setTranslateX((i - (pets.size() / 2.0)) * spacing);
             view.setTranslateY(-20);
-
             centerPane.getChildren().add(view);
         }
 
         return centerPane;
     }
 
-    // ---------- Left (Stats + Hearts) ----------
-    private VBox buildStatsPanel() {
-        VBox statsBox = new VBox(12);
-        statsBox.setAlignment(Pos.CENTER_LEFT);
+    // ---------- Pet Cards (Adoption-style bottom bar) ----------
+    private HBox buildPetCards() {
+        HBox petCardsBox = new HBox(20);
+        petCardsBox.setAlignment(Pos.CENTER);
+        petCardsBox.setPadding(new Insets(10, 0, 0, 0));
 
-        heartsBox = new HBox(5);
-        heartsBox.setAlignment(Pos.CENTER_LEFT);
-        updateHearts();
+        hungerBars.clear();
+        happinessBars.clear();
+        energyBars.clear();
+        heartRows.clear();
 
-        Label hungerLabel = new Label("Hunger:");
-        hungerBar = new ProgressBar(activePet.getHunger() / 100.0);
-        hungerBar.setPrefWidth(150);
+        for (Pet pet : mainApp.getAdoptedPets()) {
+            VBox card = new VBox(8);
+            card.setAlignment(Pos.CENTER);
+            card.setPadding(new Insets(10));
+            card.setPrefWidth(180);
+            card.setStyle("""
+                -fx-background-color: #fffaf4;
+                -fx-background-radius: 16;
+                -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 5, 0, 0, 2);
+            """);
 
-        Label happinessLabel = new Label("Happiness:");
-        happinessBar = new ProgressBar(activePet.getHappiness() / 100.0);
-        happinessBar.setPrefWidth(150);
+            Label nameLabel = new Label(pet.getName());
+            nameLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
-        Label energyLabel = new Label("Energy:");
-        energyBar = new ProgressBar(activePet.getEnergy() / 100.0);
-        energyBar.setPrefWidth(150);
+            String spritePath = "/petgame/assets/" + pet.getSpecies() + "/" + pet.getBreed() + "/Idle.png";
+            Image spriteImg = AssetCache.getImage(spritePath);
+            ImageView spriteView = new ImageView(spriteImg);
+            spriteView.setFitWidth(70);
+            spriteView.setPreserveRatio(true);
 
-        statsBox.getChildren().addAll(
-                heartsBox,
-                hungerLabel, hungerBar,
-                happinessLabel, happinessBar,
-                energyLabel, energyBar
-        );
+            // Hearts
+            HBox heartsRow = new HBox(3);
+            heartsRow.setAlignment(Pos.CENTER);
+            heartRows.put(pet, heartsRow);
+            updateHeartsRow(pet, heartsRow);
 
-        return statsBox;
-    }
+            // Stats
+            ProgressBar hungerBar = new ProgressBar(pet.getHunger() / 100.0);
+            ProgressBar happinessBar = new ProgressBar(pet.getHappiness() / 100.0);
+            ProgressBar energyBar = new ProgressBar(pet.getEnergy() / 100.0);
 
-    // ---------- Heart Image Loading ----------
-    private void loadHeartImages() {
-        fullHeart = AssetCache.getImage("/petgame/assets/displayIcons/heart_full.png");
-        emptyHeart = AssetCache.getImage("/petgame/assets/displayIcons/heart_empty.png");
+            hungerBar.setPrefWidth(120);
+            happinessBar.setPrefWidth(120);
+            energyBar.setPrefWidth(120);
+
+            hungerBar.setStyle("-fx-accent: #ffb3b3;");
+            happinessBar.setStyle("-fx-accent: #ffc8a2;");
+            energyBar.setStyle("-fx-accent: #a3d8f4;");
+
+            hungerBars.put(pet, hungerBar);
+            happinessBars.put(pet, happinessBar);
+            energyBars.put(pet, energyBar);
+
+            VBox statsBox = new VBox(3,
+                new HBox(5, new Label("🍖"), hungerBar),
+                new HBox(5, new Label("😊"), happinessBar),
+                new HBox(5, new Label("💤"), energyBar)
+            );
+            statsBox.setAlignment(Pos.CENTER);
+
+            card.getChildren().addAll(nameLabel, spriteView, heartsRow, statsBox);
+            petCardsBox.getChildren().add(card);
+        }
+
+        return petCardsBox;
     }
 
     // ---------- Timeline Logic ----------
@@ -185,7 +202,7 @@ public abstract class BasePetScene {
                 onEnvironmentTick(p);
             }
             checkForBreeding();
-            updateStatsAndHearts();
+            updatePetCards(); // ✅ visually refresh all cards
         }));
         environmentTimeline.setCycleCount(Timeline.INDEFINITE);
         environmentTimeline.play();
@@ -194,7 +211,36 @@ public abstract class BasePetScene {
     protected void stopEnvironmentTimeline() {
         if (environmentTimeline != null) environmentTimeline.stop();
     }
-    
+
+    // ---------- Live Refresh ----------
+    private void updatePetCards() {
+        for (Pet pet : mainApp.getAdoptedPets()) {
+            ProgressBar hungerBar = hungerBars.get(pet);
+            ProgressBar happinessBar = happinessBars.get(pet);
+            ProgressBar energyBar = energyBars.get(pet);
+            HBox heartsRow = heartRows.get(pet);
+
+            if (hungerBar != null) hungerBar.setProgress(pet.getHunger() / 100.0);
+            if (happinessBar != null) happinessBar.setProgress(pet.getHappiness() / 100.0);
+            if (energyBar != null) energyBar.setProgress(pet.getEnergy() / 100.0);
+
+            if (heartsRow != null) updateHeartsRow(pet, heartsRow);
+        }
+    }
+
+    private void updateHeartsRow(Pet pet, HBox heartsRow) {
+        heartsRow.getChildren().clear();
+        int hearts = pet.getRelationshipHearts();
+        for (int i = 0; i < 5; i++) {
+            Image heart = (i < hearts) ? fullHeart : emptyHeart;
+            ImageView hv = new ImageView(heart);
+            hv.setFitWidth(18);
+            hv.setFitHeight(18);
+            heartsRow.getChildren().add(hv);
+        }
+    }
+
+    // ---------- Breeding ----------
     private void checkForBreeding() {
         var pets = mainApp.getAdoptedPets();
         if (pets.size() < 2) return;
@@ -203,77 +249,37 @@ public abstract class BasePetScene {
             for (int j = i + 1; j < pets.size(); j++) {
                 Pet p1 = pets.get(i);
                 Pet p2 = pets.get(j);
-
                 boolean sameSpecies = p1.getSpecies().equals(p2.getSpecies());
                 boolean fullHearts = p1.getRelationshipHearts() >= 5 && p2.getRelationshipHearts() >= 5;
 
-                // only same species required now
                 if (sameSpecies && fullHearts && mainApp.canAdoptAnotherPet()) {
-
-                    // reset hearts after breeding
-                    p1.decreaseHappiness(p1.getHappiness()); // sets happiness to 0
-                    p2.decreaseHappiness(p2.getHappiness());
-                    p1.decreaseEnergy(p1.getEnergy()); // reset energy lol
-                    p2.decreaseEnergy(p2.getEnergy());
-                    
-                    // reset relationship completely
                     resetRelationship(p1);
                     resetRelationship(p2);
-
                     mainApp.showBreedingScene(p1, p2);
-                    return; // stop after one successful pair
+                    return;
                 }
             }
         }
     }
 
     private void resetRelationship(Pet pet) {
-        
         try {
-            var relationshipField = Pet.class.getDeclaredField("relationship");
-            relationshipField.setAccessible(true);
-            relationshipField.set(pet, 0);
+            var f = Pet.class.getDeclaredField("relationship");
+            f.setAccessible(true);
+            f.set(pet, 0);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    // ---------- UI Update Utilities ----------
-    protected void updateStatsAndHearts() {
-        updateStats();
-        updateHearts();
-    }
-
-    private void updateStats() {
-        List<Pet> pets = mainApp.getAdoptedPets();
-        if (pets.isEmpty()) return;
-
-        double avgHunger = pets.stream().mapToInt(Pet::getHunger).average().orElse(0);
-        double avgHappiness = pets.stream().mapToInt(Pet::getHappiness).average().orElse(0);
-        double avgEnergy = pets.stream().mapToInt(Pet::getEnergy).average().orElse(0);
-
-        hungerBar.setProgress(avgHunger / 100.0);
-        happinessBar.setProgress(avgHappiness / 100.0);
-        energyBar.setProgress(avgEnergy / 100.0);
-    }
-
-    private void updateHearts() {
-        heartsBox.getChildren().clear();
-        int hearts = activePet.getRelationshipHearts();
-        for (int i = 0; i < 5; i++) {
-            ImageView heartView = new ImageView(i < hearts ? fullHeart : emptyHeart);
-            heartView.setFitWidth(30);
-            heartView.setFitHeight(30);
-            heartsBox.getChildren().add(heartView);
-        }
+    // ---------- Assets ----------
+    private void loadHeartImages() {
+        fullHeart = AssetCache.getImage("/petgame/assets/displayIcons/heart_full.png");
+        emptyHeart = AssetCache.getImage("/petgame/assets/displayIcons/heart_empty.png");
     }
 
     // ---------- Layout Getter ----------
-    public BorderPane getLayout() {
-        return layout;
-    }
-
-    // ---------- Scene Getter (optional convenience) ----------
+    public BorderPane getLayout() { return layout; }
     public Scene getScene() {
         return new Scene(layout, MainApp.WINDOW_WIDTH, MainApp.WINDOW_HEIGHT);
     }
