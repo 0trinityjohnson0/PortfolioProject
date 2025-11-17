@@ -19,7 +19,7 @@ public class MainApp extends Application {
 
     // Fixed window size constants
     public static final int WINDOW_WIDTH = 1000;
-    public static final int WINDOW_HEIGHT = 600;
+    public static final int WINDOW_HEIGHT = 760;
 
     public static void main(String[] args) {
         launch(args);

@@ -16,6 +16,11 @@ public class HomeScene extends BasePetScene {
     protected String getBackgroundPath() {
         return "/petgame/assets/backgrounds/home_background.jpeg";
     }
+    
+    @Override
+    protected String getSceneTitle() {
+        return "Home";
+    }
 
     @Override
     protected void onEnvironmentTick(Pet p) {
@@ -30,7 +35,7 @@ public class HomeScene extends BasePetScene {
         HBox buttonBox = new HBox(15);
         buttonBox.setAlignment(javafx.geometry.Pos.CENTER);
 
-        Button feedBtn = new Button("Feed");
+        Button feedBtn = styledButton("Feed");
         Button playBtn = new Button("Play");
         Button groomBtn = new Button("Groom");
 

@@ -68,10 +68,15 @@ public abstract class BasePetScene {
         layout.setTop(buildTopBar());
         layout.setCenter(buildCenterPane());
 
-        VBox bottomBox = new VBox(15);
-        bottomBox.setAlignment(Pos.CENTER);
-        bottomBox.getChildren().addAll(buildCareButtons(), buildPetCards());
-        layout.setBottom(bottomBox);
+        // --- care buttons to left side ---
+        VBox leftPanel = new VBox(20);
+        leftPanel.setAlignment(Pos.TOP_CENTER);
+        leftPanel.setPadding(new Insets(10, 10, 10, 10));
+        leftPanel.getChildren().add(buildCareButtons());
+        layout.setLeft(leftPanel);
+
+        // --- pet cards at bottom ---
+        layout.setBottom(buildPetCards());
     }
 
     // ---------- Top Bar ----------
@@ -99,7 +104,7 @@ public abstract class BasePetScene {
         return "Your Pets";
     }
 
-    // ---------- Center (Background + Sprites) ----------
+    // ---------- center (background + pet sprites) ----------
     private StackPane buildCenterPane() {
         StackPane centerPane = new StackPane();
 
@@ -127,7 +132,7 @@ public abstract class BasePetScene {
         return centerPane;
     }
 
-    // ---------- Pet Cards (Adoption-style bottom bar) ----------
+    // ---------- pet cards (bottom bar) ----------
     private HBox buildPetCards() {
         HBox petCardsBox = new HBox(20);
         petCardsBox.setAlignment(Pos.CENTER);
@@ -195,14 +200,14 @@ public abstract class BasePetScene {
         return petCardsBox;
     }
 
-    // ---------- Timeline Logic ----------
+    // ---------- timeline logic ----------
     private void startEnvironmentTimeline() {
         environmentTimeline = new Timeline(new KeyFrame(Duration.seconds(5), e -> {
             for (Pet p : mainApp.getAdoptedPets()) {
                 onEnvironmentTick(p);
             }
             checkForBreeding();
-            updatePetCards(); // ✅ visually refresh all cards
+            updatePetCards();
         }));
         environmentTimeline.setCycleCount(Timeline.INDEFINITE);
         environmentTimeline.play();
@@ -212,7 +217,7 @@ public abstract class BasePetScene {
         if (environmentTimeline != null) environmentTimeline.stop();
     }
 
-    // ---------- Live Refresh ----------
+    // ---------- live refresh ----------
     private void updatePetCards() {
         for (Pet pet : mainApp.getAdoptedPets()) {
             ProgressBar hungerBar = hungerBars.get(pet);
@@ -226,6 +231,10 @@ public abstract class BasePetScene {
 
             if (heartsRow != null) updateHeartsRow(pet, heartsRow);
         }
+    }
+    
+    protected void updateStatsAndHearts() {
+        updatePetCards();
     }
 
     private void updateHeartsRow(Pet pet, HBox heartsRow) {
@@ -271,6 +280,44 @@ public abstract class BasePetScene {
             e.printStackTrace();
         }
     }
+
+ // ---------- Unified Button Styling (Adoption-Center Theme) ----------
+    protected Button styledButton(String text) {
+        Button b = new Button(text);
+
+        b.setStyle("""
+            -fx-font-size: 15px;
+            -fx-background-color: #ffd27f;
+            -fx-background-radius: 10;
+            -fx-padding: 8 18;
+            -fx-border-radius: 10;
+            -fx-border-color: #d4b483;
+            -fx-border-width: 2;
+        """);
+
+        b.setOnMouseEntered(e -> b.setStyle("""
+            -fx-font-size: 15px;
+            -fx-background-color: #ffe2a8;
+            -fx-background-radius: 10;
+            -fx-padding: 8 18;
+            -fx-border-radius: 10;
+            -fx-border-color: #d4b483;
+            -fx-border-width: 2;
+        """));
+
+        b.setOnMouseExited(e -> b.setStyle("""
+            -fx-font-size: 15px;
+            -fx-background-color: #ffd27f;
+            -fx-background-radius: 10;
+            -fx-padding: 8 18;
+            -fx-border-radius: 10;
+            -fx-border-color: #d4b483;
+            -fx-border-width: 2;
+        """));
+
+        return b;
+    }
+
 
     // ---------- Assets ----------
     private void loadHeartImages() {

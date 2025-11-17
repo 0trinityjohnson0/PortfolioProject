@@ -1,5 +1,7 @@
-// --- Pet Haven --- 
+// --- Pet Haven ---
 // Game created by Trinity Johnson for CS 3250 Portfolio Project
+//
+// BeachScene -- Environment where pets can play, dig, or rest.
 
 package petgame;
 
@@ -10,18 +12,18 @@ import javafx.scene.layout.HBox;
 
 public class BeachScene extends BasePetScene {
 
-    public BeachScene(MainApp mainApp, Pet Pet) {
-        super(mainApp, Pet);
+    public BeachScene(MainApp mainApp, Pet pet) {
+        super(mainApp, pet);
     }
 
     @Override
     protected String getBackgroundPath() {
-       return "/petgame/assets/backgrounds/beach_background.jpeg";
+        return "/petgame/assets/backgrounds/beach_background.jpeg";
     }
 
     @Override
     protected String getSceneTitle() {
-        return "At the Beach";
+        return "Beach";
     }
 
     @Override
@@ -32,28 +34,34 @@ public class BeachScene extends BasePetScene {
 
         // --- Play in Water ---
         Button playBtn = new Button("Play in Water");
-        //playBtn.setOnAction(e -> {
-        //    activePet.changeHappiness(+10);
-        //    activePet.changeEnergy(-5);
-        //    updateStatsAndHearts();
-        //});
+        playBtn.setOnAction(e -> {
+            for (Pet pet : mainApp.getAdoptedPets()) {
+                pet.increaseHappiness(10);
+                pet.decreaseEnergy(5);
+            }
+            updateStatsAndHearts();
+        });
 
         // --- Dig in Sand ---
         Button digBtn = new Button("Dig in Sand");
-        //digBtn.setOnAction(e -> {
-        //    activePet.changeHappiness(+6);
-        //    activePet.changeEnergy(-4);
-        //    activePet.changeHunger(+3);
-        //    updateStatsAndHearts();
-        //});
+        digBtn.setOnAction(e -> {
+            for (Pet pet : mainApp.getAdoptedPets()) {
+                pet.increaseHappiness(6);
+                pet.decreaseEnergy(4);
+                pet.decreaseHunger(3);
+            }
+            updateStatsAndHearts();
+        });
 
         // --- Rest in Shade ---
         Button restBtn = new Button("Rest in Shade");
-        //restBtn.setOnAction(e -> {
-        //    activePet.changeEnergy(+10);
-        //    activePet.changeHappiness(+3);
-        //    updateStatsAndHearts();
-        //});
+        restBtn.setOnAction(e -> {
+            for (Pet pet : mainApp.getAdoptedPets()) {
+                pet.increaseEnergy(10);
+                pet.increaseHappiness(3);
+            }
+            updateStatsAndHearts();
+        });
 
         box.getChildren().addAll(playBtn, digBtn, restBtn);
         return box;
@@ -67,7 +75,7 @@ public class BeachScene extends BasePetScene {
 
         // If hunger gets low, happiness dips
         if (p.getHunger() < 30) {
-            p.decreaseHappiness(-2);
+            p.decreaseHappiness(2);
         }
 
         updateStatsAndHearts();
