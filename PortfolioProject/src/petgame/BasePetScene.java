@@ -57,19 +57,25 @@ public abstract class BasePetScene {
     // ---------- Abstract Methods ----------
     protected abstract String getBackgroundPath();
     protected abstract void onEnvironmentTick(Pet pet);
-    protected abstract HBox buildCareButtons();
+    protected abstract Pane buildCareButtons();
 
     // ---------- Layout Setup ----------
     private void createLayout() {
         layout = new BorderPane();
         layout.setPrefSize(MainApp.WINDOW_WIDTH, MainApp.WINDOW_HEIGHT);
-        layout.setPadding(new Insets(20));
+        //layout.setPadding(new Insets(20));
 
         layout.setTop(buildTopBar());
         layout.setCenter(buildCenterPane());
 
         // --- care buttons to left side ---
         VBox leftPanel = new VBox(20);
+        leftPanel.setStyle("""
+        	    -fx-border-color: #d4b483;
+        	    -fx-border-width: 0 2px 0 0;
+        	    -fx-border-insets: 0 10 0 0;
+        	""");
+        
         leftPanel.setAlignment(Pos.TOP_CENTER);
         leftPanel.setPadding(new Insets(10, 10, 10, 10));
         leftPanel.getChildren().add(buildCareButtons());
@@ -77,16 +83,29 @@ public abstract class BasePetScene {
 
         // --- pet cards at bottom ---
         layout.setBottom(buildPetCards());
+        
+        HBox cards = buildPetCards();
+        cards.setStyle("""
+            -fx-border-color: #d4b483;
+            -fx-border-width: 2 0 0 0;
+        """);
+        layout.setBottom(cards);
+
     }
 
     // ---------- Top Bar ----------
     private BorderPane buildTopBar() {
         BorderPane topPane = new BorderPane();
+        topPane.setPadding(new Insets(8, 10, 8, 10));
 
+        // Perfectly centered title
+        StackPane centeredTitle = new StackPane();
         Label titleLabel = new Label(getSceneTitle());
         titleLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold;");
-        topPane.setCenter(titleLabel);
+        centeredTitle.getChildren().add(titleLabel);
+        topPane.setCenter(centeredTitle);
 
+        // Right button
         Button backBtn = new Button("Go Somewhere");
         backBtn.setStyle("-fx-font-size: 16px;");
         backBtn.setOnAction(e -> {
@@ -94,11 +113,14 @@ public abstract class BasePetScene {
             mainApp.showMapScene(activePet);
         });
 
-        BorderPane.setMargin(backBtn, new Insets(0, 20, 0, 0));
+        BorderPane.setMargin(backBtn, new Insets(8, 20, 8, 0));
         topPane.setRight(backBtn);
         BorderPane.setAlignment(backBtn, Pos.CENTER_RIGHT);
+
+        // Divider line already added earlier
         return topPane;
     }
+
 
     protected String getSceneTitle() {
         return "Your Pets";
@@ -136,7 +158,7 @@ public abstract class BasePetScene {
     private HBox buildPetCards() {
         HBox petCardsBox = new HBox(20);
         petCardsBox.setAlignment(Pos.CENTER);
-        petCardsBox.setPadding(new Insets(10, 0, 0, 0));
+        petCardsBox.setPadding(new Insets(20, 0, 20, 0));
 
         hungerBars.clear();
         happinessBars.clear();
@@ -149,10 +171,11 @@ public abstract class BasePetScene {
             card.setPadding(new Insets(10));
             card.setPrefWidth(180);
             card.setStyle("""
-                -fx-background-color: #fffaf4;
-                -fx-background-radius: 16;
-                -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 5, 0, 0, 2);
-            """);
+            	    -fx-background-color: #fff8f0;
+            	    -fx-border-color: #d4b483;
+            	    -fx-border-radius: 10;
+            	    -fx-background-radius: 10;
+            	""");
 
             Label nameLabel = new Label(pet.getName());
             nameLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
@@ -249,7 +272,7 @@ public abstract class BasePetScene {
         }
     }
 
-    // ---------- Breeding ----------
+    // ---------- breeding ----------
     private void checkForBreeding() {
         var pets = mainApp.getAdoptedPets();
         if (pets.size() < 2) return;
@@ -281,7 +304,7 @@ public abstract class BasePetScene {
         }
     }
 
- // ---------- Unified Button Styling (Adoption-Center Theme) ----------
+ // ---------- unified button styling ----------
     protected Button styledButton(String text) {
         Button b = new Button(text);
 

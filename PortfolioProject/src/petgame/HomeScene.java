@@ -1,10 +1,9 @@
-// --- Pet Haven --- 
-// Game created by Trinity Johnson for CS 3250 Portfolio Project
-
 package petgame;
 
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 
 public class HomeScene extends BasePetScene {
 
@@ -24,20 +23,19 @@ public class HomeScene extends BasePetScene {
 
     @Override
     protected void onEnvironmentTick(Pet p) {
-        // Home is a resting environment
         p.decreaseHunger(2);
         p.decreaseHappiness(1);
         p.increaseEnergy(2);
     }
 
     @Override
-    protected HBox buildCareButtons() {
-        HBox buttonBox = new HBox(15);
-        buttonBox.setAlignment(javafx.geometry.Pos.CENTER);
+    protected Pane buildCareButtons() {
+        VBox box = new VBox(12);
+        box.setAlignment(Pos.TOP_CENTER);
 
         Button feedBtn = styledButton("Feed");
-        Button playBtn = new Button("Play");
-        Button groomBtn = new Button("Groom");
+        Button playBtn = styledButton("Play");
+        Button groomBtn = styledButton("Groom");
 
         feedBtn.setOnAction(e -> {
             for (Pet pet : mainApp.getAdoptedPets()) pet.feed();
@@ -54,7 +52,7 @@ public class HomeScene extends BasePetScene {
             updateStatsAndHearts();
         });
 
-        buttonBox.getChildren().addAll(feedBtn, playBtn, groomBtn);
-        return buttonBox;
+        box.getChildren().addAll(feedBtn, playBtn, groomBtn);
+        return box;
     }
 }
