@@ -12,138 +12,145 @@ import java.io.InputStream;
 
 public class MapScene {
 
-    private final BorderPane layout;
-    private final MainApp mainApp;
-    private final Pet pet;
+    private BorderPane layout;
+    private MainApp mainApp;
+    private Pet pet;
 
     public MapScene(MainApp mainApp, Pet pet) {
         this.mainApp = mainApp;
         this.pet = pet;
-        this.layout = new BorderPane();
         createLayout();
     }
 
     private void createLayout() {
-        layout.setPadding(new Insets(20));
+        layout = new BorderPane();
+        layout.setPrefSize(MainApp.WINDOW_WIDTH, MainApp.WINDOW_HEIGHT);
 
-        // ---------- Top: Title (matches style with other scenes) ----------
-        BorderPane top = new BorderPane();
-        Text title = new Text("Where would you like to go?");
+        // 🔶 Add padding similar to BasePetScene
+        layout.setPadding(new Insets(15, 20, 15, 20));
+
+        // ---------- TOP BAR ----------
+        BorderPane topBar = new BorderPane();
+        topBar.setPadding(new Insets(10, 20, 10, 20));
+
+        // 🔶 Add bottom separator line (same as BasePetScene)
+        topBar.setStyle("""
+            -fx-border-color: #d4b483;
+            -fx-border-width: 0 0 2 0;
+        """);
+
+        Text title = new Text("Choose a Destination");
         title.setStyle("-fx-font-size: 26px; -fx-font-weight: bold;");
-        top.setCenter(title);
-        layout.setTop(top);
 
-        // ---------- Left: Sidebar (Main Menu / Save / Settings) ----------
-        VBox sideBar = new VBox(12);
-        sideBar.setAlignment(Pos.TOP_LEFT);
-        sideBar.setPadding(new Insets(10, 20, 10, 0));
+        StackPane centeredTitle = new StackPane(title);
+        topBar.setCenter(centeredTitle);
+        layout.setTop(topBar);
 
-        Button mainMenuBtn = new Button("Main Menu");
-        Button saveBtn = new Button("Save Game");
-        Button settingsBtn = new Button("Settings");
-
-        // Keep sizing and style consistent with other scenes’ buttons
-        for (Button b : new Button[]{mainMenuBtn, saveBtn, settingsBtn}) {
-            b.setStyle("-fx-font-size: 16px; -fx-padding: 10px 20px;");
-        }
-
-        mainMenuBtn.setOnAction(e -> mainApp.showMainMenu());
-        saveBtn.setOnAction(e -> {
-            // TODO: implement save later
-            System.out.println("Save feature coming soon...");
-        });
-        settingsBtn.setOnAction(e -> {
-            // TODO: settings later
-            System.out.println("Settings not implemented yet.");
-        });
-
-        sideBar.getChildren().addAll(mainMenuBtn, saveBtn, settingsBtn);
-        layout.setLeft(sideBar);
-
-        // ---------- Center: Map centered with buttons overlayed at corners ----------
-        // Use a StackPane to center the map area; inside it, an AnchorPane to position buttons by corners.
-        StackPane centerStack = new StackPane();
-        centerStack.setAlignment(Pos.CENTER);
-
+        // ---------- CENTER MAP ----------
         AnchorPane mapPane = new AnchorPane();
-        mapPane.setPrefSize(800, MainApp.WINDOW_HEIGHT - 160); // 800 wide to match other scenes; room for top/side padding
-        mapPane.setMaxWidth(800);
+        mapPane.setPrefSize(MainApp.WINDOW_WIDTH, MainApp.WINDOW_HEIGHT - 120);
 
-        // Map background
-        Image mapBackground = loadImageOrPlaceholder("/petgame/assets/backgrounds/map_background.png");
+        InputStream bgStream = getClass().getResourceAsStream("/petgame/assets/backgrounds/map_background.png");
+        Image mapBackground = (bgStream != null)
+                ? new Image(bgStream)
+                : new Image(getClass().getResourceAsStream("/petgame/assets/placeholder.png"));
+
         ImageView mapView = new ImageView(mapBackground);
-        mapView.setFitWidth(800);             // match BasePetScene background width
+        mapView.setFitWidth(MainApp.WINDOW_WIDTH - 60);
         mapView.setPreserveRatio(true);
 
-        // anchor the map to the pane (0,0)
         AnchorPane.setTopAnchor(mapView, 0.0);
         AnchorPane.setLeftAnchor(mapView, 0.0);
+
         mapPane.getChildren().add(mapView);
 
-        // ---------- Location Buttons (kept at corners as before) ----------
-        Button parkBtn = new Button("Park");
-        Button beachBtn = new Button("Beach");
-        Button mountainBtn = new Button("Mountains");
-        Button adoptionBtn = new Button("Adoption Center");
-        Button homeBtn = new Button("Go Home");
+        // ---------- BUTTONS ----------
+        Button parkBtn = styledButton("Park");
+        Button beachBtn = styledButton("Beach");
+        Button mountainBtn = styledButton("Mountains");
+        Button adoptionBtn = styledButton("Adoption Center");
+        Button homeBtn = styledButton("Go Home");
 
-        for (Button b : new Button[]{parkBtn, beachBtn, mountainBtn, adoptionBtn, homeBtn}) {
-            b.setStyle("-fx-font-size: 16px; -fx-padding: 10px 20px;");
-        }
-
-        // Adoption availability
         boolean canAdopt = mainApp.canAdoptAnotherPet();
         adoptionBtn.setDisable(!canAdopt);
-        if (!canAdopt) {
-            adoptionBtn.setStyle("-fx-font-size: 16px; -fx-padding: 10px 20px; -fx-opacity: 0.5;");
-        }
 
-        // Actions
+        // Button actions
         parkBtn.setOnAction(e -> mainApp.showParkScene(pet));
         beachBtn.setOnAction(e -> mainApp.showBeachScene(pet));
         mountainBtn.setOnAction(e -> mainApp.showMountainScene(pet));
-        adoptionBtn.setOnAction(e -> { if (canAdopt) mainApp.showAdoptionCenter(); });
+        adoptionBtn.setOnAction(e -> {
+            if (canAdopt) mainApp.showAdoptionCenter();
+        });
         homeBtn.setOnAction(e -> mainApp.showHomeScene(pet));
 
-        // Corner-style positions (relative to the 800px mapPane)
-        // Top-left
-        AnchorPane.setTopAnchor(parkBtn, 30.0);
-        AnchorPane.setLeftAnchor(parkBtn, 30.0);
+        // Position buttons
+        AnchorPane.setTopAnchor(parkBtn, 50.0);
+        AnchorPane.setLeftAnchor(parkBtn, 90.0);
 
-        // Top-right
-        AnchorPane.setTopAnchor(beachBtn, 30.0);
-        AnchorPane.setRightAnchor(beachBtn, 30.0);
+        AnchorPane.setTopAnchor(beachBtn, 50.0);
+        AnchorPane.setRightAnchor(beachBtn, 90.0);
 
-        // Bottom-left
-        AnchorPane.setBottomAnchor(mountainBtn, 70.0);
-        AnchorPane.setLeftAnchor(mountainBtn, 30.0);
+        AnchorPane.setBottomAnchor(mountainBtn, 50.0);
+        AnchorPane.setLeftAnchor(mountainBtn, 90.0);
 
-        // Bottom-right
-        AnchorPane.setBottomAnchor(adoptionBtn, 70.0);
-        AnchorPane.setRightAnchor(adoptionBtn, 30.0);
+        AnchorPane.setBottomAnchor(adoptionBtn, 50.0);
+        AnchorPane.setRightAnchor(adoptionBtn, 90.0);
 
-        // Bottom-center (Home)
-        AnchorPane.setBottomAnchor(homeBtn, 70.0);
-        // center horizontally by using left anchor = (paneWidth - btnWidth)/2 after layout.
-        // Since we don't have btn width now, approximate by anchoring to 50% using translateX:
-        // Place in the middle with left= (800/2 - 60) — rough centering that looks good.
-        AnchorPane.setLeftAnchor(homeBtn, 800 / 2.0 - 60); // tweak the 60 if your button width changes
+        AnchorPane.setBottomAnchor(homeBtn, 50.0);
+        AnchorPane.setLeftAnchor(homeBtn, MainApp.WINDOW_WIDTH / 2.0 - 70);
 
         mapPane.getChildren().addAll(parkBtn, beachBtn, mountainBtn, adoptionBtn, homeBtn);
 
-        // Center the whole mapPane (with its buttons) in the window
-        centerStack.getChildren().add(mapPane);
-        StackPane.setAlignment(mapPane, Pos.CENTER);
-        layout.setCenter(centerStack);
+        layout.setCenter(mapPane);
+
+        // ---------- BOTTOM SEPARATOR LINE ----------
+        // (Optional, but visually nice)
+        Region bottomSpacer = new Region();
+        bottomSpacer.setPrefHeight(10);
+        bottomSpacer.setStyle("""
+            -fx-border-color: #d4b483;
+            -fx-border-width: 2 0 0 0;
+        """);
+
+        layout.setBottom(bottomSpacer);
     }
 
-    private Image loadImageOrPlaceholder(String path) {
-        InputStream bgStream = getClass().getResourceAsStream(path);
-        if (bgStream != null) return new Image(bgStream);
+    // ---------- Unified button styling (matches BasePetScene) ----------
+    private Button styledButton(String text) {
+        Button b = new Button(text);
+        b.setPrefWidth(160);
 
-        System.err.println("⚠️ Missing image: " + path + " — using placeholder");
-        InputStream ph = getClass().getResourceAsStream("/petgame/assets/placeholder.png");
-        return ph != null ? new Image(ph) : new Image("data:,"); // ultra-fallback
+        b.setStyle("""
+            -fx-font-size: 16px;
+            -fx-background-color: #ffd27f;
+            -fx-background-radius: 10;
+            -fx-padding: 8 18;
+            -fx-border-radius: 10;
+            -fx-border-color: #d4b483;
+            -fx-border-width: 2;
+        """);
+
+        b.setOnMouseEntered(e -> b.setStyle("""
+            -fx-font-size: 16px;
+            -fx-background-color: #ffe2a8;
+            -fx-background-radius: 10;
+            -fx-padding: 8 18;
+            -fx-border-radius: 10;
+            -fx-border-color: #d4b483;
+            -fx-border-width: 2;
+        """));
+
+        b.setOnMouseExited(e -> b.setStyle("""
+            -fx-font-size: 16px;
+            -fx-background-color: #ffd27f;
+            -fx-background-radius: 10;
+            -fx-padding: 8 18;
+            -fx-border-radius: 10;
+            -fx-border-color: #d4b483;
+            -fx-border-width: 2;
+        """));
+
+        return b;
     }
 
     public BorderPane getLayout() {

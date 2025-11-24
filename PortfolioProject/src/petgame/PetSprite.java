@@ -31,8 +31,8 @@ public class PetSprite {
     private double baseX = 0;
     private double baseYOffset = -90;
     private double xPosition = 0;
-    private double moveRange = 150;
-    private double pixelsPerStep = 2.0;
+    private double moveRange = 250;
+    private double pixelsPerStep = 4.0;
 
     // Timing
     private int idleMsPerFrame = 220;
@@ -79,7 +79,7 @@ public class PetSprite {
         Image img = AssetCache.getImage(relativePath);
         if (img == null) return null;
 
-        // Compute frame info (sprites are square frames in one row)
+        // Compute frame (this is to flip through the image)
         int frameSize = (int) Math.round(img.getHeight());
         if (frameSize <= 0) frameSize = (int) Math.round(img.getWidth());
 

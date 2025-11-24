@@ -97,6 +97,11 @@ public abstract class BasePetScene {
     private BorderPane buildTopBar() {
         BorderPane topPane = new BorderPane();
         topPane.setPadding(new Insets(8, 10, 8, 10));
+        
+        topPane.setStyle("""
+                -fx-border-color: #d4b483;
+                -fx-border-width: 0 0 2 0;
+            """);
 
         // Perfectly centered title
         StackPane centeredTitle = new StackPane();
@@ -106,7 +111,7 @@ public abstract class BasePetScene {
         topPane.setCenter(centeredTitle);
 
         // Right button
-        Button backBtn = new Button("Go Somewhere");
+        Button backBtn = new Button("Map");
         backBtn.setStyle("-fx-font-size: 16px;");
         backBtn.setOnAction(e -> {
             stopEnvironmentTimeline();
@@ -117,7 +122,7 @@ public abstract class BasePetScene {
         topPane.setRight(backBtn);
         BorderPane.setAlignment(backBtn, Pos.CENTER_RIGHT);
 
-        // Divider line already added earlier
+        // Divider line
         return topPane;
     }
 
@@ -307,6 +312,8 @@ public abstract class BasePetScene {
  // ---------- unified button styling ----------
     protected Button styledButton(String text) {
         Button b = new Button(text);
+        
+        b.setPrefWidth(140);  // set fixed button size
 
         b.setStyle("""
             -fx-font-size: 15px;

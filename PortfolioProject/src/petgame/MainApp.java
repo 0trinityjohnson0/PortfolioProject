@@ -98,7 +98,10 @@ public class MainApp extends Application {
     }
 
     public void showMountainScene(Pet pet) {
-        // TODO: Implement MountainScene
+        MountainScene mountainScene = new MountainScene(this, pet);
+        Scene scene = new Scene(mountainScene.getLayout(), WINDOW_WIDTH, WINDOW_HEIGHT);
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("Pet Haven - Mountains");
     }
     
     public void showBreedingScene(Pet parent1, Pet parent2) {
