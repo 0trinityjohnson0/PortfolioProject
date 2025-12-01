@@ -80,29 +80,29 @@ public class MainApp extends Application {
     }
 
     public void showHomeScene(Pet pet) {
-        HomeScene homeScene = new HomeScene(this, pet);
-        Scene scene = new Scene(homeScene.getLayout(), WINDOW_WIDTH, WINDOW_HEIGHT);
-        primaryStage.setScene(scene);
+        HomeScene sceneObj = new HomeScene(this, pet);
+        primaryStage.setScene(sceneObj.getScene());
         primaryStage.setTitle("Pet Haven - Home");
     }
 
-    public void showParkScene(Pet pet) {
-        // TODO: Implement ParkScene
-    }
-
     public void showBeachScene(Pet pet) {
-        BeachScene beachScene = new BeachScene(this, pet);
-        Scene scene = new Scene(beachScene.getLayout(), WINDOW_WIDTH, WINDOW_HEIGHT);
-        primaryStage.setScene(scene);
+        BeachScene sceneObj = new BeachScene(this, pet);
+        primaryStage.setScene(sceneObj.getScene());
         primaryStage.setTitle("Pet Haven - Beach");
     }
 
-    public void showMountainScene(Pet pet) {
-        MountainScene mountainScene = new MountainScene(this, pet);
-        Scene scene = new Scene(mountainScene.getLayout(), WINDOW_WIDTH, WINDOW_HEIGHT);
-        primaryStage.setScene(scene);
+    public void showParkScene(Pet pet) {
+        ParkScene sceneObj = new ParkScene(this, pet);
+        primaryStage.setScene(sceneObj.getScene());
+        primaryStage.setTitle("Pet Haven - Park");
+    }
+
+    public void showMountainScene(Pet pet) { 
+        MountainScene sceneObj = new MountainScene(this, pet);
+        primaryStage.setScene(sceneObj.getScene());
         primaryStage.setTitle("Pet Haven - Mountains");
     }
+
     
     public void showBreedingScene(Pet parent1, Pet parent2) {
         BreedingScene breedScene = new BreedingScene(this, parent1, parent2);

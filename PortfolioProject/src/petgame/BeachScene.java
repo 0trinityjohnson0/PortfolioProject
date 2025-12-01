@@ -1,7 +1,7 @@
 // --- Pet Haven --- 
 // Game created by Trinity Johnson for CS 3250 Portfolio Project
 //
-// BeachScene -- Environment where pets can play, dig, or rest.
+// BeachScene -- Environment for pets to explore.
 
 package petgame;
 
@@ -60,14 +60,9 @@ public class BeachScene extends BasePetScene {
 
     @Override
     protected void onEnvironmentTick(Pet p) {
-        // Every 5 seconds: gentle stat decay
-        p.decreaseHunger(2);
-        p.decreaseEnergy(1);
-
-        // Low hunger reduces happiness
-        if (p.getHunger() < 30) {
-            p.decreaseHappiness(2);
-        }
+        p.decreaseEnergy(2); 		// Regular energy used
+        p.decreaseHunger(2);		// Walking around
+        p.increaseHappiness(1);		// Being outside makes you happy
 
         updateStatsAndHearts();
     }

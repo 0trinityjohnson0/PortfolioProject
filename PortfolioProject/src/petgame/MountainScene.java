@@ -1,4 +1,6 @@
 // --- Pet Haven ---
+// Game created by Trinity Johnson for CS 3250 Portfolio Project
+//
 // MountainScene -- Environment for pets to explore.
 
 package petgame;
@@ -33,19 +35,22 @@ public class MountainScene extends BasePetScene {
         Button sniffBtn = styledButton("Sniff Around");
         Button restBtn = styledButton("Rest on Rock");
 
+        // EXPLORE
         exploreBtn.setOnAction(e -> {
-            activePet.increaseEnergy(-6);     // exploring takes energy
-            activePet.increaseHappiness(8);   // but it's fun
+            activePet.decreaseEnergy(6);     
+            activePet.increaseHappiness(8); 
             activePet.increaseHunger(3);
             updateStatsAndHearts();
         });
 
+        // SNIFF
         sniffBtn.setOnAction(e -> {
             activePet.increaseHappiness(4);
             activePet.decreaseEnergy(2);
             updateStatsAndHearts();
         });
 
+        // REST
         restBtn.setOnAction(e -> {
             activePet.increaseEnergy(10);
             activePet.increaseHappiness(2);
@@ -58,12 +63,9 @@ public class MountainScene extends BasePetScene {
 
     @Override
     protected void onEnvironmentTick(Pet p) {
-        // Mountains are cold and tiring:
-        p.decreaseEnergy(2);
-        p.decreaseHunger(2);
-
-        // But pets tend to feel calm/happy in nature
-        p.increaseHappiness(1);
+        p.decreaseEnergy(2); 		// Regular energy used
+        p.decreaseHunger(2);		// Walking around
+        p.increaseHappiness(1);		// Being outside makes you happy
 
         updateStatsAndHearts();
     }

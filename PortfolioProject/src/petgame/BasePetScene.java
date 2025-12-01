@@ -1,13 +1,13 @@
 // --- Pet Haven ---
 // Game created by Trinity Johnson for CS 3250 Portfolio Project
 //
-// BasePetScene -- Shared parent class for all pet interaction environments (Home, Beach, Park, etc.)
+// BasePetScene -- Shared parent class for all pet interaction environments (Home, Beach, Park)
 // Handles:
-//  • Background and pet rendering
-//  • Shared UI structure (top bar, pet cards, care buttons)
-//  • Stat updates and decay timeline
-//  • Automatic breeding when two pets reach 5 hearts
-//  • Individual pet card stat refresh every few seconds
+//  - Background and pet rendering
+//  - Shared UI structure (top bar, pet cards, care buttons)
+//  - Stat updates and decay timeline
+//  - Automatic breeding when two pets reach 5 hearts
+//  - Individual pet card stat refresh every few seconds
 
 package petgame;
 
