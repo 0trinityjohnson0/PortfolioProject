@@ -56,7 +56,7 @@ public class MapScene {
 
 
         Button saveBtn = styledButton("Save Game");
-        // (do later - saving logic)
+        saveBtn.setOnAction(e -> mainApp.saveGame());
 
         Button settingsBtn = styledButton("Settings");
 

@@ -6,8 +6,8 @@
 //  - Background and pet rendering
 //  - Shared UI structure (top bar, pet cards, care buttons)
 //  - Stat updates and decay timeline
-//  - Automatic breeding when two pets reach 5 hearts
 //  - Individual pet card stat refresh every few seconds
+//  - Automatic breeding when two pets reach 5 hearts
 
 package petgame;
 
@@ -103,7 +103,7 @@ public abstract class BasePetScene {
                 -fx-border-width: 0 0 2 0;
             """);
 
-        // Perfectly centered title
+        // Center title
         StackPane centeredTitle = new StackPane();
         Label titleLabel = new Label(getSceneTitle());
         titleLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold;");
@@ -111,8 +111,7 @@ public abstract class BasePetScene {
         topPane.setCenter(centeredTitle);
 
         // Right button
-        Button backBtn = new Button("Map");
-        backBtn.setStyle("-fx-font-size: 16px;");
+        Button backBtn = styledButton("Map");
         backBtn.setOnAction(e -> {
             stopEnvironmentTimeline();
             mainApp.showMapScene(activePet);
@@ -131,7 +130,7 @@ public abstract class BasePetScene {
         return "Your Pets";
     }
 
-    // ---------- center (background + pet sprites) ----------
+    // ---------- Center (background + pet sprites) ----------
     private StackPane buildCenterPane() {
         StackPane centerPane = new StackPane();
 
@@ -159,7 +158,7 @@ public abstract class BasePetScene {
         return centerPane;
     }
 
-    // ---------- pet cards (bottom bar) ----------
+    // ---------- Pet cards (bottom bar) ----------
     private HBox buildPetCards() {
         HBox petCardsBox = new HBox(20);
         petCardsBox.setAlignment(Pos.CENTER);
@@ -191,13 +190,13 @@ public abstract class BasePetScene {
             spriteView.setFitWidth(70);
             spriteView.setPreserveRatio(true);
 
-            // Hearts
+            // hearts
             HBox heartsRow = new HBox(3);
             heartsRow.setAlignment(Pos.CENTER);
             heartRows.put(pet, heartsRow);
             updateHeartsRow(pet, heartsRow);
 
-            // Stats
+            // stats
             ProgressBar hungerBar = new ProgressBar(pet.getHunger() / 100.0);
             ProgressBar happinessBar = new ProgressBar(pet.getHappiness() / 100.0);
             ProgressBar energyBar = new ProgressBar(pet.getEnergy() / 100.0);
@@ -228,7 +227,7 @@ public abstract class BasePetScene {
         return petCardsBox;
     }
 
-    // ---------- timeline logic ----------
+    // ---------- Timeline logic ----------
     private void startEnvironmentTimeline() {
         environmentTimeline = new Timeline(new KeyFrame(Duration.seconds(5), e -> {
             for (Pet p : mainApp.getAdoptedPets()) {
@@ -245,7 +244,7 @@ public abstract class BasePetScene {
         if (environmentTimeline != null) environmentTimeline.stop();
     }
 
-    // ---------- live refresh ----------
+    // ---------- Live refresh ----------
     private void updatePetCards() {
         for (Pet pet : mainApp.getAdoptedPets()) {
             ProgressBar hungerBar = hungerBars.get(pet);
@@ -277,7 +276,7 @@ public abstract class BasePetScene {
         }
     }
 
-    // ---------- breeding ----------
+    // ---------- Breeding ----------
     private void checkForBreeding() {
         var pets = mainApp.getAdoptedPets();
         if (pets.size() < 2) return;
@@ -309,7 +308,7 @@ public abstract class BasePetScene {
         }
     }
 
- // ---------- unified button styling ----------
+ // ---------- Unified button styling ----------
     protected Button styledButton(String text) {
         Button b = new Button(text);
         

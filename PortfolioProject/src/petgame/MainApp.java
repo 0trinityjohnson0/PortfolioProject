@@ -5,6 +5,7 @@ package petgame;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,9 +16,9 @@ public class MainApp extends Application {
     private Pet adoptedPet;
 
     // Track all pets the player has adopted
-    private List<Pet> adoptedPets = new ArrayList<>();
+    public List<Pet> adoptedPets = new ArrayList<>();
 
-    // Fixed window size constants
+    // Fixed window size
     public static final int WINDOW_WIDTH = 1000;
     public static final int WINDOW_HEIGHT = 760;
 
@@ -28,8 +29,14 @@ public class MainApp extends Application {
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
-        primaryStage.setResizable(false); // keep size fixed
-        showMainMenu();
+        primaryStage.setResizable(false);
+
+        // --- SET APPLICATION ICON ---
+        primaryStage.getIcons().add(new Image(
+                getClass().getResourceAsStream("/petgame/assets/Logo/PetHavenIcon.png")
+        ));
+
+        showSplashScreen();
     }
 
     // ---------- Scene switching methods ----------
@@ -40,6 +47,14 @@ public class MainApp extends Application {
         primaryStage.setTitle("Pet Haven - Main Menu");
         primaryStage.show();
     }
+    
+    public void showSplashScreen() {
+        SplashScreen splash = new SplashScreen(this);
+        primaryStage.setScene(splash.getScene());
+        primaryStage.setTitle("Pet Haven");
+        primaryStage.show();
+    }
+
 
     public void showAdoptionCenter() {
         // Later adoptions
@@ -117,6 +132,29 @@ public class MainApp extends Application {
             primaryStage.close();
         }
     }
+    
+    public void saveGame() {
+        SaveManager.saveGame(adoptedPets);
+    }
+
+    public void loadGame() {
+        List<Pet> loaded = SaveManager.loadGame();
+        if (loaded != null) {
+            adoptedPets = loaded;
+            System.out.println("Game loaded successfully!");
+            showHomeScene(adoptedPets.get(0));  // go home with first adopted pet
+        } else {
+            System.out.println("No save found!");
+        }
+    }
+
+    
+    public void resetGame() {
+        adoptedPets.clear();
+        SaveManager.deleteSave();
+    }
+
+    
 
     // --- ADOPTION LOGIC ---
     public boolean canAdoptAnotherPet() {

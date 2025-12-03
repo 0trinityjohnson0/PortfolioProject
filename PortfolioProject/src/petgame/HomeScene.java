@@ -1,3 +1,8 @@
+// --- Pet Haven ---
+// Game created by Trinity Johnson for CS 3250 Portfolio Project
+// 
+// Home Scene -- 
+
 package petgame;
 
 import javafx.geometry.Pos;

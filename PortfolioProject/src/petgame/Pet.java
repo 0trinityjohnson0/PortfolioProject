@@ -7,7 +7,11 @@
 
 package petgame;
 
-public class Pet {
+import java.io.Serializable;  // Allows me to save the game with Java Serialization
+
+public class Pet implements Serializable {
+    private static final long serialVersionUID = 1L;
+
 
     private String name;
     private String species;
@@ -21,6 +25,8 @@ public class Pet {
     private int relationship; // 0-100
 
     private static final int MAX_STAT = 100;
+   
+
 
     // ---------- Constructor ----------
     public Pet(String name, String species, String breed, String gender) {

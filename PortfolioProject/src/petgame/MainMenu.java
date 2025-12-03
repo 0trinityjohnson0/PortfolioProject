@@ -1,14 +1,13 @@
 // --- Pet Haven ---
 // Game created by Trinity Johnson for CS 3250 Portfolio Project
 
-// MainMenu class -- Builds the visual layout for the game's main menu.
-// Contains buttons to start a new game, load a game (future), or exit.
-// Button actions delegate to the MainApp class to handle scene switching.
-
 package petgame;
 
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 
@@ -17,27 +16,83 @@ public class MainMenu {
     private VBox layout;
 
     public MainMenu(MainApp mainApp) {
-        layout = new VBox(20);
+        layout = new VBox(25);
         layout.setAlignment(Pos.CENTER);
+        layout.setPadding(new Insets(40, 20, 40, 20));
+        layout.setStyle("-fx-background-color: #fff8f0;");
 
-        // Title
-        Text title = new Text("🐾 Welcome to Pet Haven 🐾");
-        title.setStyle("-fx-font-size: 28px; -fx-font-weight: bold;");
+        // ---------- LOGO ----------
+        Image logo = new Image(
+                getClass().getResourceAsStream("/petgame/assets/Logo/PetGameLogo.png"),
+                260,      // width (adjust as needed)
+                0,        // auto height
+                true,     // preserve ratio
+                false     // no smoothing → crisp pixel art
+        );
+        ImageView logoView = new ImageView(logo);
 
-        // Buttons
-        Button newGameBtn = new Button("New Game");
-        Button loadGameBtn = new Button("Load Game");
-        Button exitBtn = new Button("Exit");
-
-        // Button actions
-        newGameBtn.setOnAction(e -> mainApp.showInitialAdoption());
-        loadGameBtn.setOnAction(e -> System.out.println("Load Game coming soon!"));
+        // ---------- TITLE ----------
+        
+        // ---------- BUTTONS ----------
+        Button newGameBtn = styledButton("New Game");
+        newGameBtn.setOnAction(e -> {
+            mainApp.resetGame();        // clears everything
+            mainApp.showInitialAdoption();
+        });
+        
+        Button loadGameBtn = styledButton("Load Game");
+        loadGameBtn.setOnAction(e -> mainApp.loadGame());
+        
+        Button exitBtn = styledButton("Exit");
         exitBtn.setOnAction(e -> mainApp.exitGame());
 
-        layout.getChildren().addAll(title, newGameBtn, loadGameBtn, exitBtn);
+        // ---------- ADD ELEMENTS ----------
+        layout.getChildren().addAll(
+                logoView,
+                newGameBtn,
+                loadGameBtn,
+                exitBtn
+        );
     }
 
     public VBox getLayout() {
         return layout;
+    }
+
+    // ---------- Unified Button Style (same as BasePetScene) ----------
+    private Button styledButton(String text) {
+        Button b = new Button(text);
+
+        b.setStyle("""
+            -fx-font-size: 18px;
+            -fx-background-color: #ffd27f;
+            -fx-background-radius: 12;
+            -fx-padding: 10 24;
+            -fx-border-radius: 12;
+            -fx-border-color: #d4b483;
+            -fx-border-width: 2;
+        """);
+
+        b.setOnMouseEntered(e -> b.setStyle("""
+            -fx-font-size: 18px;
+            -fx-background-color: #ffe2a8;
+            -fx-background-radius: 12;
+            -fx-padding: 10 24;
+            -fx-border-radius: 12;
+            -fx-border-color: #d4b483;
+            -fx-border-width: 2;
+        """));
+
+        b.setOnMouseExited(e -> b.setStyle("""
+            -fx-font-size: 18px;
+            -fx-background-color: #ffd27f;
+            -fx-background-radius: 12;
+            -fx-padding: 10 24;
+            -fx-border-radius: 12;
+            -fx-border-color: #d4b483;
+            -fx-border-width: 2;
+        """));
+
+        return b;
     }
 }

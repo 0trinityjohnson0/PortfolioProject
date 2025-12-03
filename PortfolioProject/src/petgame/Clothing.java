@@ -4,6 +4,8 @@
 // Clothing class -- Represents clothing items in the game. 
 // Each item can have a name and may be a favorite for certain pets, affecting happiness.
 
+// UNIMPLEMENTED FOR THE TIME BEING
+
 package petgame;
 
 public class Clothing extends Item {
