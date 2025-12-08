@@ -6,8 +6,8 @@
 //  - Background and pet rendering
 //  - Shared UI structure (top bar, pet cards, care buttons)
 //  - Stat updates and decay timeline
-//  - Individual pet card stat refresh every few seconds
 //  - Automatic breeding when two pets reach 5 hearts
+//  - Walk-in animation on scene load
 
 package petgame;
 
@@ -23,6 +23,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.util.Duration;
+
 import java.util.*;
 
 public abstract class BasePetScene {
@@ -38,7 +39,10 @@ public abstract class BasePetScene {
     // Stat decay timeline
     protected Timeline environmentTimeline;
 
-    // --- Per-pet UI references ---
+    // (optional) store sprites if needed later
+    protected final List<PetSprite> sceneSprites = new ArrayList<>();
+
+    // UI references per pet
     private final Map<Pet, ProgressBar> hungerBars = new HashMap<>();
     private final Map<Pet, ProgressBar> happinessBars = new HashMap<>();
     private final Map<Pet, ProgressBar> energyBars = new HashMap<>();
@@ -54,7 +58,7 @@ public abstract class BasePetScene {
         startEnvironmentTimeline();
     }
 
-    // ---------- Abstract Methods ----------
+    // ---------- Abstract methods ----------
     protected abstract String getBackgroundPath();
     protected abstract void onEnvironmentTick(Pet pet);
     protected abstract Pane buildCareButtons();
@@ -63,54 +67,44 @@ public abstract class BasePetScene {
     private void createLayout() {
         layout = new BorderPane();
         layout.setPrefSize(MainApp.WINDOW_WIDTH, MainApp.WINDOW_HEIGHT);
-        //layout.setPadding(new Insets(20));
 
         layout.setTop(buildTopBar());
         layout.setCenter(buildCenterPane());
 
-        // --- care buttons to left side ---
         VBox leftPanel = new VBox(20);
         leftPanel.setStyle("""
-        	    -fx-border-color: #d4b483;
-        	    -fx-border-width: 0 2px 0 0;
-        	    -fx-border-insets: 0 10 0 0;
-        	""");
-        
+            -fx-border-color: #d4b483;
+            -fx-border-width: 0 2px 0 0;
+        """);
         leftPanel.setAlignment(Pos.TOP_CENTER);
-        leftPanel.setPadding(new Insets(10, 10, 10, 10));
+        leftPanel.setPadding(new Insets(10));
         leftPanel.getChildren().add(buildCareButtons());
         layout.setLeft(leftPanel);
 
-        // --- pet cards at bottom ---
-        layout.setBottom(buildPetCards());
-        
         HBox cards = buildPetCards();
         cards.setStyle("""
             -fx-border-color: #d4b483;
             -fx-border-width: 2 0 0 0;
         """);
         layout.setBottom(cards);
-
     }
 
-    // ---------- Top Bar ----------
+    // ---------- Top bar ----------
     private BorderPane buildTopBar() {
         BorderPane topPane = new BorderPane();
         topPane.setPadding(new Insets(8, 10, 8, 10));
-        
         topPane.setStyle("""
-                -fx-border-color: #d4b483;
-                -fx-border-width: 0 0 2 0;
-            """);
+            -fx-border-color: #d4b483;
+            -fx-border-width: 0 0 2 0;
+        """);
 
         // Center title
-        StackPane centeredTitle = new StackPane();
         Label titleLabel = new Label(getSceneTitle());
         titleLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold;");
-        centeredTitle.getChildren().add(titleLabel);
-        topPane.setCenter(centeredTitle);
+        StackPane titleStack = new StackPane(titleLabel);
+        topPane.setCenter(titleStack);
 
-        // Right button
+        // Back button
         Button backBtn = styledButton("Map");
         backBtn.setOnAction(e -> {
             stopEnvironmentTimeline();
@@ -119,18 +113,15 @@ public abstract class BasePetScene {
 
         BorderPane.setMargin(backBtn, new Insets(8, 20, 8, 0));
         topPane.setRight(backBtn);
-        BorderPane.setAlignment(backBtn, Pos.CENTER_RIGHT);
 
-        // Divider line
         return topPane;
     }
-
 
     protected String getSceneTitle() {
         return "Your Pets";
     }
 
-    // ---------- Center (background + pet sprites) ----------
+    // ---------- Center area (Background + Pets with walk-in) ----------
     private StackPane buildCenterPane() {
         StackPane centerPane = new StackPane();
 
@@ -143,26 +134,69 @@ public abstract class BasePetScene {
         List<Pet> pets = mainApp.getAdoptedPets();
         if (pets.isEmpty()) return centerPane;
 
-        double spacing = 800.0 / (pets.size() + 1);
+        // Fixed spacing looks good for your window; tweak if needed
+        double spacing = 220.0;
+        double centerIndex = (pets.size() - 1) / 2.0; // so 1 pet -> index 0, offset 0
+
         for (int i = 0; i < pets.size(); i++) {
             Pet p = pets.get(i);
-            PetSprite sprite = new PetSprite(p);
-            ImageView view = sprite.getView();
 
+            PetSprite sprite = new PetSprite(p);
+            sprite.stopAI(); // disable random behavior during intro
+            sceneSprites.add(sprite);
+
+            ImageView view = sprite.getView();
             StackPane.setAlignment(view, Pos.BOTTOM_CENTER);
-            view.setTranslateX((i - (pets.size() / 2.0)) * spacing);
-            view.setTranslateY(-20);
+
+            // final on-screen position (centered nicely)
+            double finalX = (i - centerIndex) * spacing;
+            double finalY = -20;
+            view.setTranslateY(finalY);
+
+            // randomly choose side to walk in from
+            boolean fromLeft = Math.random() < 0.5;
+            double startX = fromLeft ? -500 : 500;
+            view.setTranslateX(startX);
+
+            // walking animation facing the right way
+            boolean faceLeft = !fromLeft; // if entering from right, face left
+            sprite.playWalkCycle(faceLeft);
+
+            // movement timeline: slide from startX to finalX in small steps
+            double distance = Math.abs(finalX - startX);
+            double step = 6;                  // pixels per tick
+            int steps = (int) Math.ceil(distance / step);
+
+            Timeline move = new Timeline(new KeyFrame(Duration.millis(70), e -> {
+                double currentX = view.getTranslateX();
+                double nextX = currentX + (fromLeft ? step : -step);
+                view.setTranslateX(nextX);
+            }));
+
+            move.setCycleCount(steps);
+            move.setOnFinished(e -> {
+                // snap exactly to final position
+                view.setTranslateX(finalX);
+                sprite.setBaseX(finalX);
+
+                // switch to idle + normal AI
+                sprite.playIdle();
+                sprite.startAI();
+            });
+
+            move.play();
+
             centerPane.getChildren().add(view);
         }
 
         return centerPane;
     }
 
-    // ---------- Pet cards (bottom bar) ----------
+    // ---------- Pet cards ----------
     private HBox buildPetCards() {
-        HBox petCardsBox = new HBox(20);
-        petCardsBox.setAlignment(Pos.CENTER);
-        petCardsBox.setPadding(new Insets(20, 0, 20, 0));
+        HBox box = new HBox(20);
+        box.setAlignment(Pos.CENTER);
+        box.setPadding(new Insets(20, 0, 20, 0));
 
         hungerBars.clear();
         happinessBars.clear();
@@ -175,11 +209,11 @@ public abstract class BasePetScene {
             card.setPadding(new Insets(10));
             card.setPrefWidth(180);
             card.setStyle("""
-            	    -fx-background-color: #fff8f0;
-            	    -fx-border-color: #d4b483;
-            	    -fx-border-radius: 10;
-            	    -fx-background-radius: 10;
-            	""");
+                -fx-background-color: #fff8f0;
+                -fx-border-color: #d4b483;
+                -fx-border-radius: 10;
+                -fx-background-radius: 10;
+            """);
 
             Label nameLabel = new Label(pet.getName());
             nameLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
@@ -190,13 +224,13 @@ public abstract class BasePetScene {
             spriteView.setFitWidth(70);
             spriteView.setPreserveRatio(true);
 
-            // hearts
+            // Hearts row
             HBox heartsRow = new HBox(3);
             heartsRow.setAlignment(Pos.CENTER);
             heartRows.put(pet, heartsRow);
             updateHeartsRow(pet, heartsRow);
 
-            // stats
+            // Stats bars
             ProgressBar hungerBar = new ProgressBar(pet.getHunger() / 100.0);
             ProgressBar happinessBar = new ProgressBar(pet.getHappiness() / 100.0);
             ProgressBar energyBar = new ProgressBar(pet.getEnergy() / 100.0);
@@ -213,18 +247,18 @@ public abstract class BasePetScene {
             happinessBars.put(pet, happinessBar);
             energyBars.put(pet, energyBar);
 
-            VBox statsBox = new VBox(3,
+            VBox stats = new VBox(3,
                 new HBox(5, new Label("🍖"), hungerBar),
                 new HBox(5, new Label("😊"), happinessBar),
                 new HBox(5, new Label("💤"), energyBar)
             );
-            statsBox.setAlignment(Pos.CENTER);
+            stats.setAlignment(Pos.CENTER);
 
-            card.getChildren().addAll(nameLabel, spriteView, heartsRow, statsBox);
-            petCardsBox.getChildren().add(card);
+            card.getChildren().addAll(nameLabel, spriteView, heartsRow, stats);
+            box.getChildren().add(card);
         }
 
-        return petCardsBox;
+        return box;
     }
 
     // ---------- Timeline logic ----------
@@ -244,7 +278,7 @@ public abstract class BasePetScene {
         if (environmentTimeline != null) environmentTimeline.stop();
     }
 
-    // ---------- Live refresh ----------
+    // ---------- Stats Refresh ----------
     private void updatePetCards() {
         for (Pet pet : mainApp.getAdoptedPets()) {
             ProgressBar hungerBar = hungerBars.get(pet);
@@ -255,24 +289,23 @@ public abstract class BasePetScene {
             if (hungerBar != null) hungerBar.setProgress(pet.getHunger() / 100.0);
             if (happinessBar != null) happinessBar.setProgress(pet.getHappiness() / 100.0);
             if (energyBar != null) energyBar.setProgress(pet.getEnergy() / 100.0);
-
             if (heartsRow != null) updateHeartsRow(pet, heartsRow);
         }
     }
-    
+
     protected void updateStatsAndHearts() {
         updatePetCards();
     }
 
-    private void updateHeartsRow(Pet pet, HBox heartsRow) {
-        heartsRow.getChildren().clear();
+    private void updateHeartsRow(Pet pet, HBox row) {
+        row.getChildren().clear();
         int hearts = pet.getRelationshipHearts();
         for (int i = 0; i < 5; i++) {
             Image heart = (i < hearts) ? fullHeart : emptyHeart;
             ImageView hv = new ImageView(heart);
             hv.setFitWidth(18);
             hv.setFitHeight(18);
-            heartsRow.getChildren().add(hv);
+            row.getChildren().add(hv);
         }
     }
 
@@ -285,6 +318,7 @@ public abstract class BasePetScene {
             for (int j = i + 1; j < pets.size(); j++) {
                 Pet p1 = pets.get(i);
                 Pet p2 = pets.get(j);
+
                 boolean sameSpecies = p1.getSpecies().equals(p2.getSpecies());
                 boolean fullHearts = p1.getRelationshipHearts() >= 5 && p2.getRelationshipHearts() >= 5;
 
@@ -300,20 +334,18 @@ public abstract class BasePetScene {
 
     private void resetRelationship(Pet pet) {
         try {
-            var f = Pet.class.getDeclaredField("relationship");
-            f.setAccessible(true);
-            f.set(pet, 0);
+            var field = Pet.class.getDeclaredField("relationship");
+            field.setAccessible(true);
+            field.set(pet, 0);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
- // ---------- Unified button styling ----------
+    // ---------- Button styling ----------
     protected Button styledButton(String text) {
         Button b = new Button(text);
-        
-        b.setPrefWidth(140);  // set fixed button size
-
+        b.setPrefWidth(140);
         b.setStyle("""
             -fx-font-size: 15px;
             -fx-background-color: #ffd27f;
@@ -347,15 +379,15 @@ public abstract class BasePetScene {
         return b;
     }
 
-
     // ---------- Assets ----------
     private void loadHeartImages() {
         fullHeart = AssetCache.getImage("/petgame/assets/displayIcons/heart_full.png");
         emptyHeart = AssetCache.getImage("/petgame/assets/displayIcons/heart_empty.png");
     }
 
-    // ---------- Layout Getter ----------
+    // ---------- Layout getters ----------
     public BorderPane getLayout() { return layout; }
+
     public Scene getScene() {
         return new Scene(layout, MainApp.WINDOW_WIDTH, MainApp.WINDOW_HEIGHT);
     }

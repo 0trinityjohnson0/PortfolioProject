@@ -25,7 +25,7 @@ public class PetSprite {
 
     // Timelines
     private Timeline currentAnim;
-    private Timeline aiTimeline;
+    Timeline aiTimeline;
 
     // Layout / movement
     private double baseX = 0;
@@ -38,7 +38,7 @@ public class PetSprite {
     private int idleMsPerFrame = 220;
     private int walkMsPerFrame = 140;
 
-    // Cached animation sheets for this pet (Idle / Walk / Lay)
+    // Cached animation sheets (Idle / Walk / Lay)
     private final Map<String, SheetInfo> sheetCache = new HashMap<>();
 
     // ---------- Constructor ----------
@@ -47,8 +47,8 @@ public class PetSprite {
         this.view = new ImageView();
         view.setTranslateY(baseYOffset);
 
-        playIdle();
-        startRandomBehavior();
+        playIdle();          // start idle animation
+        startRandomBehavior(); // start natural movement AI
     }
 
     public ImageView getView() {
@@ -70,16 +70,13 @@ public class PetSprite {
 
     // ---------- Sprite Sheet Loading ----------
     private SheetInfo loadSheet(String relativePath) {
-        // Check if this sheet is already cached locally (per pet)
         if (sheetCache.containsKey(relativePath)) {
             return sheetCache.get(relativePath);
         }
 
-        // Load using global AssetCache
         Image img = AssetCache.getImage(relativePath);
         if (img == null) return null;
 
-        // Compute frame (this is to flip through the image)
         int frameSize = (int) Math.round(img.getHeight());
         if (frameSize <= 0) frameSize = (int) Math.round(img.getWidth());
 
@@ -88,7 +85,6 @@ public class PetSprite {
 
         SheetInfo info = new SheetInfo(img, frameSize, numFrames);
 
-        // Store in per-pet cache
         sheetCache.put(relativePath, info);
         return info;
     }
@@ -101,7 +97,7 @@ public class PetSprite {
     }
 
     // ---------- IDLE ----------
-    private void playIdle() {
+    public void playIdle() {
         stopCurrentAnim();
 
         String base = "/petgame/assets/" + pet.getSpecies() + "/" + pet.getBreed() + "/";
@@ -115,6 +111,7 @@ public class PetSprite {
         view.setTranslateY(baseYOffset);
 
         final int[] frame = {0};
+
         currentAnim = new Timeline(new KeyFrame(Duration.millis(idleMsPerFrame), e -> {
             frame[0] = (frame[0] + 1) % idle.numFrames;
             view.setViewport(new Rectangle2D(frame[0] * idle.frameSize, 0, idle.frameSize, idle.frameSize));
@@ -123,7 +120,7 @@ public class PetSprite {
         currentAnim.play();
     }
 
-    // ---------- WALK ----------
+    // ---------- WALK (used by random AI) ----------
     private void walkLeft() { walk(true); }
     private void walkRight() { walk(false); }
 
@@ -186,7 +183,7 @@ public class PetSprite {
         currentAnim.play();
     }
 
-    // ---------- RANDOM BEHAVIOR ----------
+    // ---------- RANDOM AI BEHAVIOR ----------
     private void startRandomBehavior() {
         aiTimeline = new Timeline(new KeyFrame(Duration.seconds(2.8 + random.nextDouble()), e -> {
             double r = random.nextDouble();
@@ -199,10 +196,55 @@ public class PetSprite {
         aiTimeline.play();
     }
 
+    // ---------- AI Control (for scene walk-in) ----------
+    public void stopAI() {
+        if (aiTimeline != null) {
+            aiTimeline.stop();
+            aiTimeline = null;
+        }
+    }
+
+    public void startAI() {
+        if (aiTimeline == null) {
+            startRandomBehavior();
+        }
+    }
+
+    // ---------- Walk cycle only (no movement) for intro ----------
+    public void playWalkCycle(boolean faceLeft) {
+        stopCurrentAnim();
+
+        String base = "/petgame/assets/" + pet.getSpecies() + "/" + pet.getBreed() + "/";
+        SheetInfo walk = loadSheet(base + "Walk.png");
+        if (walk == null) return;
+
+        view.setImage(walk.sheet);
+        view.setViewport(new Rectangle2D(0, 0, walk.frameSize, walk.frameSize));
+        view.setFitWidth(150);
+        view.setPreserveRatio(true);
+        view.setTranslateY(baseYOffset);
+        view.setScaleX(faceLeft ? -1 : 1);
+
+        final int[] frame = {0};
+
+        currentAnim = new Timeline(new KeyFrame(Duration.millis(walkMsPerFrame), e -> {
+            frame[0] = (frame[0] + 1) % walk.numFrames;
+            view.setViewport(new Rectangle2D(frame[0] * walk.frameSize, 0, walk.frameSize, walk.frameSize));
+        }));
+        currentAnim.setCycleCount(Timeline.INDEFINITE);
+        currentAnim.play();
+    }
+
     // ---------- Tweaks API ----------
     public void setBaseYOffset(double y) { this.baseYOffset = y; }
     public void setMoveRange(double r) { this.moveRange = r; }
     public void setPixelsPerStep(double px) { this.pixelsPerStep = px; }
     public void setIdleMsPerFrame(int ms) { this.idleMsPerFrame = ms; }
     public void setWalkMsPerFrame(int ms) { this.walkMsPerFrame = ms; }
+
+    public void setBaseX(double x) {
+        this.baseX = x;
+        this.xPosition = 0;
+        view.setTranslateX(baseX);
+    }
 }

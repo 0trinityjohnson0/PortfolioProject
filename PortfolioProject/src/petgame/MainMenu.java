@@ -9,7 +9,6 @@ import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 
 public class MainMenu {
 
@@ -31,18 +30,16 @@ public class MainMenu {
         );
         ImageView logoView = new ImageView(logo);
 
-        // ---------- TITLE ----------
-        
         // ---------- BUTTONS ----------
         Button newGameBtn = styledButton("New Game");
         newGameBtn.setOnAction(e -> {
             mainApp.resetGame();        // clears everything
             mainApp.showInitialAdoption();
         });
-        
+
         Button loadGameBtn = styledButton("Load Game");
         loadGameBtn.setOnAction(e -> mainApp.loadGame());
-        
+
         Button exitBtn = styledButton("Exit");
         exitBtn.setOnAction(e -> mainApp.exitGame());
 
