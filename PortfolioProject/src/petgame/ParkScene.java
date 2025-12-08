@@ -1,7 +1,5 @@
 // --- Pet Haven --- 
 // Game created by Trinity Johnson for CS 3250 Portfolio Project
-//
-// ParkScene -- Environments for pets to explore.
 
 package petgame;
 

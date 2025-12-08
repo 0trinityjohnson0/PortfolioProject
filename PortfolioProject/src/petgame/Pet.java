@@ -1,10 +1,6 @@
 // --- Pet Haven ---
 // Game created by Trinity Johnson for CS 3250 Portfolio Project
 
-// Pet class -- Represents a pet in the game (dog or cat). 
-// Stores attributes like name, species, breed, gender, age, happiness, hunger, and favorites. 
-// Contains methods to modify stats and interact with the pet.
-
 package petgame;
 
 import java.io.Serializable;  // Allows me to save the game with Java Serialization

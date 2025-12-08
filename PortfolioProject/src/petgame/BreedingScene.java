@@ -1,9 +1,5 @@
 // --- Pet Haven ---
 // Game created by Trinity Johnson for CS 3250 Portfolio Project
-//
-// Breeding Scene -- this is for when two pets have 5 hearts each, 
-// an automatic breeding page will show and a new pet will be created 
-// breed will be randomly picked from one of the parents
 
 package petgame;
 

@@ -1,8 +1,5 @@
 // --- Pet Haven ---
 // Game created by Trinity Johnson for CS 3250 Portfolio Project
-//
-// PetSprite -- Handles animation and movement for a Pet object in the world.
-// Uses AssetCache class to load and reuse sprite sheets efficiently.
 
 package petgame;
 

@@ -1,9 +1,6 @@
 // --- Pet Haven ---
 // Game created by Trinity Johnson for CS 3250 Portfolio Project
 
-// AssetCache -- Caches all image assets (sprites, backgrounds, icons)
-// so each image is loaded once and reused throughout the game.
-
 package petgame;
 
 import javafx.scene.image.Image;

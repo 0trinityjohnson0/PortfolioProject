@@ -1,10 +1,6 @@
 // --- Pet Haven ---
 // Game created by Trinity Johnson for CS 3250 Portfolio Project
 
-// Relationship class -- this class tracks the relationship between two pets. 
-// It stores a friendshipLevel that increases as the pets interact or play together.
-// Provides methods to increase friendship and to check if the pets are compatible (friendshipLevel >= 100)
-
 package petgame;
 
 public class Relationship {

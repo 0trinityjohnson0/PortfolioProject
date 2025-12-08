@@ -1,5 +1,9 @@
+// --- Pet Haven ---
+// Game created by Trinity Johnson for CS 3250 Portfolio Project
+
 package petgame;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -28,7 +32,6 @@ public class MapScene {
         // ---------- TOP BAR ----------
         BorderPane topBar = new BorderPane();
         topBar.setPadding(new Insets(10, 20, 10, 20));
-
         topBar.setStyle("""
             -fx-border-color: #d4b483;
             -fx-border-width: 0 0 2 0;
@@ -36,16 +39,13 @@ public class MapScene {
 
         Text title = new Text("Choose a Destination");
         title.setStyle("-fx-font-size: 26px; -fx-font-weight: bold;");
-
-        StackPane centeredTitle = new StackPane(title);
-        topBar.setCenter(centeredTitle);
+        topBar.setCenter(new StackPane(title));
         layout.setTop(topBar);
 
         // ---------- LEFT PANEL ----------
         VBox leftPanel = new VBox(18);
         leftPanel.setAlignment(Pos.TOP_CENTER);
         leftPanel.setPadding(new Insets(15, 10, 15, 10));
-
         leftPanel.setStyle("""
             -fx-border-color: #d4b483;
             -fx-border-width: 0 2 0 0;
@@ -54,30 +54,36 @@ public class MapScene {
         Button mainMenuBtn = styledButton("Main Menu");
         mainMenuBtn.setOnAction(e -> mainApp.showMainMenu());
 
-
         Button saveBtn = styledButton("Save Game");
         saveBtn.setOnAction(e -> mainApp.saveGame());
 
         Button settingsBtn = styledButton("Settings");
 
-        leftPanel.getChildren().addAll(mainMenuBtn, saveBtn, settingsBtn);
+        leftPanel.getChildren().addAll(
+                mainMenuBtn, saveBtn, settingsBtn
+        );
         layout.setLeft(leftPanel);
 
         // ---------- CENTER MAP ----------
         AnchorPane mapPane = new AnchorPane();
-        mapPane.setPrefSize(MainApp.WINDOW_WIDTH, MainApp.WINDOW_HEIGHT - 120);
+        mapPane.setPrefSize(
+                MainApp.WINDOW_WIDTH,
+                MainApp.WINDOW_HEIGHT - 120
+        );
 
-        Image mapBackground = AssetCache.getImage("/petgame/assets/backgrounds/map_background.png");
+        Image mapBackground = AssetCache.getImage(
+                "/petgame/assets/backgrounds/map_background.png"
+        );
+
         ImageView mapView = new ImageView(mapBackground);
         mapView.setFitWidth(MainApp.WINDOW_WIDTH - 60);
         mapView.setPreserveRatio(true);
 
         AnchorPane.setTopAnchor(mapView, 0.0);
         AnchorPane.setLeftAnchor(mapView, 0.0);
-
         mapPane.getChildren().add(mapView);
 
-        // ---------- DESTINATION BUTTONS ----------
+        // ---------- MAP BUTTONS ----------
         Button parkBtn = styledButton("Park");
         Button beachBtn = styledButton("Beach");
         Button mountainBtn = styledButton("Mountains");
@@ -87,37 +93,79 @@ public class MapScene {
         boolean canAdopt = mainApp.canAdoptAnotherPet();
         adoptionBtn.setDisable(!canAdopt);
 
-        // actions
         parkBtn.setOnAction(e -> mainApp.showParkScene(pet));
         beachBtn.setOnAction(e -> mainApp.showBeachScene(pet));
         mountainBtn.setOnAction(e -> mainApp.showMountainScene(pet));
-        adoptionBtn.setOnAction(e -> { if (canAdopt) mainApp.showAdoptionCenter(); });
+        adoptionBtn.setOnAction(e -> {
+            if (canAdopt) mainApp.showAdoptionCenter();
+        });
         homeBtn.setOnAction(e -> mainApp.showHomeScene(pet));
 
-        // positions
-        AnchorPane.setTopAnchor(parkBtn, 50.0);
-        AnchorPane.setLeftAnchor(parkBtn, 150.0);
+        mapPane.getChildren().addAll(
+                parkBtn, beachBtn,
+                mountainBtn, adoptionBtn,
+                homeBtn
+        );
 
-        AnchorPane.setTopAnchor(beachBtn, 50.0);
-        AnchorPane.setRightAnchor(beachBtn, 150.0);
+        // ---------- BUTTON POSITIONS ----------
+        double sideOffset = 150;
+        double topOffset = 50;
 
-        AnchorPane.setBottomAnchor(mountainBtn, 80.0);
-        AnchorPane.setLeftAnchor(mountainBtn, 150.0);
+        // Top row
+        AnchorPane.setTopAnchor(parkBtn, topOffset);
+        AnchorPane.setLeftAnchor(parkBtn, sideOffset);
 
-        AnchorPane.setBottomAnchor(adoptionBtn, 80.0);
-        AnchorPane.setRightAnchor(adoptionBtn, 150.0);
+        AnchorPane.setTopAnchor(beachBtn, topOffset);
+        AnchorPane.setRightAnchor(beachBtn, sideOffset);
 
-        AnchorPane.setBottomAnchor(homeBtn, 30.0);
-        AnchorPane.setLeftAnchor(homeBtn, (MainApp.WINDOW_WIDTH / 2.0) - 80);
+        // Image-relative placement (after layout)
+        Platform.runLater(() -> {
 
-        mapPane.getChildren().addAll(parkBtn, beachBtn, mountainBtn, adoptionBtn, homeBtn);
+            var imageBounds = mapView.getBoundsInParent();
+
+            double imageBottom = imageBounds.getMaxY();
+            double imageLeft   = imageBounds.getMinX();
+            double imageWidth  = imageBounds.getWidth();
+            double imageCenterX = imageLeft + (imageWidth / 2.0);
+            double imageCenterY = imageBounds.getMinY()
+                    + (imageBounds.getHeight() / 2.0);
+
+            double bottomMargin = 100;
+
+            // Bottom-left
+            AnchorPane.setTopAnchor(
+                    mountainBtn,
+                    imageBottom - bottomMargin
+            );
+            AnchorPane.setLeftAnchor(mountainBtn, sideOffset);
+
+            // Bottom-right
+            AnchorPane.setTopAnchor(
+                    adoptionBtn,
+                    imageBottom - bottomMargin
+            );
+            AnchorPane.setRightAnchor(adoptionBtn, sideOffset);
+
+            // Center (Go Home)
+            double homeBtnWidth  = homeBtn.prefWidth(-1);
+            double homeBtnHeight = homeBtn.prefHeight(-1);
+
+            AnchorPane.setLeftAnchor(
+                    homeBtn,
+                    imageCenterX - homeBtnWidth / 2.0
+            );
+            AnchorPane.setTopAnchor(
+                    homeBtn,
+                    imageCenterY - homeBtnHeight / 2.0
+            );
+        });
+
         layout.setCenter(mapPane);
     }
 
-    // ---------- Matching button styling ----------
+    // ---------- BUTTON STYLE ----------
     private Button styledButton(String text) {
         Button b = new Button(text);
-
         b.setStyle("""
             -fx-font-size: 15px;
             -fx-background-color: #ffd27f;
@@ -127,27 +175,6 @@ public class MapScene {
             -fx-border-color: #d4b483;
             -fx-border-width: 2;
         """);
-
-        b.setOnMouseEntered(e -> b.setStyle("""
-            -fx-font-size: 15px;
-            -fx-background-color: #ffe2a8;
-            -fx-background-radius: 10;
-            -fx-padding: 8 18;
-            -fx-border-radius: 10;
-            -fx-border-color: #d4b483;
-            -fx-border-width: 2;
-        """));
-
-        b.setOnMouseExited(e -> b.setStyle("""
-            -fx-font-size: 15px;
-            -fx-background-color: #ffd27f;
-            -fx-background-radius: 10;
-            -fx-padding: 8 18;
-            -fx-border-radius: 10;
-            -fx-border-color: #d4b483;
-            -fx-border-width: 2;
-        """));
-
         return b;
     }
 

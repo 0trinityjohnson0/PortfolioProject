@@ -1,13 +1,5 @@
 // --- Pet Haven ---
 // Game created by Trinity Johnson for CS 3250 Portfolio Project
-//
-// BasePetScene -- Shared parent class for all pet interaction environments (Home, Beach, Park)
-// Handles:
-//  - Background and pet rendering
-//  - Shared UI structure (top bar, pet cards, care buttons)
-//  - Stat updates and decay timeline
-//  - Automatic breeding when two pets reach 5 hearts
-//  - Walk-in animation on scene load
 
 package petgame;
 
@@ -135,7 +127,7 @@ public abstract class BasePetScene {
         if (pets.isEmpty()) return centerPane;
 
         // Fixed spacing looks good for your window; tweak if needed
-        double spacing = 220.0;
+        double spacing = 200.0;
         double centerIndex = (pets.size() - 1) / 2.0; // so 1 pet -> index 0, offset 0
 
         for (int i = 0; i < pets.size(); i++) {
